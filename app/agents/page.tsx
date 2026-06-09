@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { AGENTS_DATA, AGENT_RESPONSES, AgentDef } from '@/lib/data';
+import { AGENTS_DATA, AgentDef } from '@/lib/data';
 
 interface ChatMessage { role: 'agent' | 'user'; text: string; }
 interface ActiveAgent { name: string; emoji: string; pole: string; }
@@ -9,32 +9,107 @@ export default function AgentsPage() {
   const [activeAgent, setActiveAgent] = useState<ActiveAgent | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [typing, setTyping] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const messagesEl = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   function openAgent(a: AgentDef, pole: string) {
     if (a.recruit) return;
-    const responses = AGENT_RESPONSES[a.n] || AGENT_RESPONSES['default'];
+    abortRef.current?.abort();
     setActiveAgent({ name: a.n, emoji: a.e, pole });
-    setMessages([{ role: 'agent', text: responses[0] }]);
+    setMessages([{ role: 'agent', text: getWelcome(a.n) }]);
     setInput('');
+    setStreaming(false);
   }
 
-  function sendMessage() {
-    if (!input.trim() || !activeAgent) return;
+  function getWelcome(name: string): string {
+    const welcomes: Record<string, string> = {
+      'Web Developer': 'Prêt à coder. Quel site ou module tu veux que je construise ?',
+      'Instagram': 'Prêt pour le contenu Instagram. Quel client et quel type de post ?',
+      'Facebook': 'Prêt pour Facebook. Quel client et quel objectif ?',
+      'LinkedIn': 'Prêt pour LinkedIn. Post Thibault ou post client ?',
+      'TikTok': 'Prêt pour TikTok. Quel client et quel concept de vidéo ?',
+      'SEO': 'Prêt pour le SEO. Donne-moi l\'URL ou le mot-clé cible.',
+      'Finance': `MRR actuel : 490€, objectif 5 000€. Que veux-tu analyser ?`,
+      'Prospection': 'Prêt à prospecter. Quel secteur et quelle zone géographique ?',
+      'Devis': 'Prêt à rédiger une proposition. Quel client et quel besoin ?',
+      'Analytics': 'Prêt pour le reporting. Quel client et quelle période ?',
+      'Account Manager': 'Prêt pour le suivi client. Quel client tu veux préparer ?',
+      'Meta Ads': 'Prêt pour les Meta Ads. Quel client et quel objectif publicitaire ?',
+      'Google Ads': 'Prêt pour Google Ads. Quel client et quel budget mensuel ?',
+      'Editorial Director': 'Prêt à orchestrer la stratégie éditoriale. Quel client ?',
+      'Email Marketing': 'Prêt pour l\'email. Newsletter, séquence ou email promo ?',
+      'Onboarding': 'Prêt pour l\'onboarding. Quel nouveau client à démarrer ?',
+      'Project Manager': 'Vue globale : 4 projets actifs. Que veux-tu suivre ou ajuster ?',
+      'Mobile Web Dev': 'Prêt pour le mobile. Quel bug ou quelle optimisation ?',
+      'Google My Business': 'Prêt pour GMB. Quel client et quel type de contenu ?',
+      'Contenu Lumi': 'Prêt pour le contenu Lumi. Post LinkedIn, étude de cas ou autre ?',
+    };
+    return welcomes[name] ?? 'Bonjour, je suis prêt. Quelle est ta demande ?';
+  }
+
+  async function sendMessage() {
+    if (!input.trim() || !activeAgent || streaming) return;
     const text = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text }]);
-    setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-      setMessages(prev => [...prev, { role: 'agent', text: `Je prends en charge : "${text.slice(0, 60)}${text.length > 60 ? '…' : ''}". Dans la version finale, j'ai accès à l'API Claude et à toutes vos données.` }]);
-    }, 1000 + Math.random() * 700);
+
+    const userMsg: ChatMessage = { role: 'user', text };
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
+
+    const apiMessages = updatedMessages.map(m => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    }));
+
+    setStreaming(true);
+    const agentMsgIndex = updatedMessages.length;
+    setMessages(prev => [...prev, { role: 'agent', text: '' }]);
+
+    abortRef.current = new AbortController();
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages, agentName: activeAgent.name }),
+        signal: abortRef.current.signal,
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error(`Erreur ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        fullText += decoder.decode(value, { stream: true });
+        setMessages(prev => {
+          const copy = [...prev];
+          copy[agentMsgIndex] = { role: 'agent', text: fullText };
+          return copy;
+        });
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        setMessages(prev => {
+          const copy = [...prev];
+          copy[agentMsgIndex] = { role: 'agent', text: '[Erreur de connexion à l\'API. Vérifie ta clé ANTHROPIC_API_KEY.]' };
+          return copy;
+        });
+      }
+    } finally {
+      setStreaming(false);
+    }
   }
 
   useEffect(() => {
     if (messagesEl.current) messagesEl.current.scrollTop = messagesEl.current.scrollHeight;
-  }, [messages, typing]);
+  }, [messages, streaming]);
 
   return (
     <>
@@ -75,20 +150,20 @@ export default function AgentsPage() {
         {/* Chat panel */}
         {activeAgent && (
           <div style={{ width: 380, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.06)', display: 'flex', flexDirection: 'column', background: 'var(--night-2)' }}>
-            {/* Chat header */}
+            {/* Header */}
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12 }}>
               <div className="agent-avatar-wrap" style={{ width: 36, height: 36, fontSize: 18, flexShrink: 0 }}>{activeAgent.emoji}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 14 }}>{activeAgent.name}</div>
-                <div style={{ fontSize: 11, color: 'var(--mint)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--mint)', animation: 'pulse 2s infinite' }} />
-                  En ligne
+                <div style={{ fontSize: 11, color: streaming ? 'var(--amber)' : 'var(--mint)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: streaming ? 'var(--amber)' : 'var(--mint)', animation: 'pulse 2s infinite' }} />
+                  {streaming ? 'En train d\'écrire…' : 'En ligne'}
                 </div>
               </div>
-              <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setActiveAgent(null)}>x</button>
+              <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => { abortRef.current?.abort(); setActiveAgent(null); }}>×</button>
             </div>
 
-            {/* Context */}
+            {/* Context banner */}
             <div style={{ padding: '8px 16px', background: 'rgba(13,148,136,.08)', borderBottom: '1px solid rgba(255,255,255,.04)', fontSize: 12, color: 'var(--gray)' }}>
               <strong style={{ color: 'var(--teal-light)' }}>Contexte :</strong> Lumi · Thibault · 2 clients actifs (100P + BeLoc)
             </div>
@@ -100,33 +175,41 @@ export default function AgentsPage() {
                   <div style={{ fontSize: 11, color: 'var(--gray-dim)', textAlign: m.role === 'user' ? 'right' : 'left' }}>
                     {m.role === 'user' ? 'Thibault' : activeAgent.name}
                   </div>
-                  <div className={m.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-agent'}>{m.text}</div>
-                </div>
-              ))}
-              {typing && (
-                <div style={{ alignSelf: 'flex-start', maxWidth: '85%' }}>
-                  <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 4 }}>{activeAgent.name}</div>
-                  <div style={{ display: 'flex', gap: 4, alignItems: 'center', padding: '10px 14px', background: 'var(--night-3)', borderRadius: 12, borderBottomLeftRadius: 4, width: 'fit-content' }}>
-                    {[0, 200, 400].map(d => <div key={d} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gray)', animation: `typing 1.2s ${d}ms infinite` }} />)}
+                  <div className={m.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-agent'} style={{ whiteSpace: 'pre-wrap' }}>
+                    {m.text}
+                    {streaming && i === messages.length - 1 && m.role === 'agent' && (
+                      <span style={{ display: 'inline-block', width: 2, height: 14, background: 'var(--teal-light)', marginLeft: 2, verticalAlign: 'text-bottom', animation: 'blink 1s step-end infinite' }} />
+                    )}
                   </div>
                 </div>
-              )}
+              ))}
             </div>
 
             {/* Input */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 8 }}>
-              <textarea value={input} onChange={e => setInput(e.target.value)}
+              <textarea
+                value={input}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                placeholder="Écris ta demande à l'agent…" rows={1}
-                style={{ flex: 1, padding: '10px 14px', background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', resize: 'none' }} />
-              <button onClick={sendMessage}
-                style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--teal)', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end', flexShrink: 0 }}>
+                placeholder={streaming ? 'En attente de la réponse…' : 'Écris ta demande à l\'agent…'}
+                disabled={streaming}
+                rows={1}
+                style={{ flex: 1, padding: '10px 14px', background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 10, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', resize: 'none', opacity: streaming ? .6 : 1 }}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={streaming || !input.trim()}
+                style={{ width: 38, height: 38, borderRadius: 10, background: streaming ? 'var(--gray-dim)' : 'var(--teal)', border: 'none', color: 'white', cursor: streaming ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end', flexShrink: 0, transition: 'background .15s' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+      `}</style>
     </>
   );
 }
