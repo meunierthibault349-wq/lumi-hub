@@ -243,30 +243,35 @@ export default function ClientsPage() {
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
               {tab === 'missions' && (() => {
-                const missions = MISSIONS.filter(m => m.client.includes(selected.name.split(' ')[0]));
-                return missions.length > 0 ? missions.map(m => (
-                  <div key={m.id} style={{ background: 'var(--night-3)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{m.title}</div>
-                      <span className={`badge badge-${m.status}`} style={{ flexShrink: 0, fontSize: 11 }}>{m.status.replace(/_/g, ' ')}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <div className="progress-bar" style={{ flex: 1 }}>
-                        <div className={`progress-fill${m.status === 'en_attente_client' ? ' amber' : ''}`} style={{ width: `${m.progress}%` }} />
+                const clientMissions = MISSIONS.filter(m => m.client.includes(selected.name.split(' ')[0]));
+                if (clientMissions.length === 0) return <div style={{ color: 'var(--gray-dim)', fontSize: 13 }}>Aucune mission.</div>;
+                return (
+                  <>
+                    {clientMissions.map(m => (
+                      <div key={m.id} style={{ background: 'var(--night-3)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{m.title}</div>
+                          <span className={`badge badge-${m.status}`} style={{ flexShrink: 0, fontSize: 11 }}>{m.status.replace(/_/g, ' ')}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <div className="progress-bar" style={{ flex: 1 }}>
+                            <div className={`progress-fill${m.status === 'en_attente_client' ? ' amber' : ''}`} style={{ width: `${m.progress}%` }} />
+                          </div>
+                          <span style={{ fontSize: 12, color: 'var(--gray)', whiteSpace: 'nowrap' }}>{m.progress}%</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--gray-dim)' }}>
+                          <span>{m.ref}</span>
+                          <span>{m.devis} · {m.deadline}</span>
+                        </div>
                       </div>
-                      <span style={{ fontSize: 12, color: 'var(--gray)', whiteSpace: 'nowrap' }}>{m.progress}%</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--gray-dim)' }}>
-                      <span>{m.ref}</span>
-                      <span>{m.devis} · {m.deadline}</span>
-                    </div>
-                  </div>
-                )) : <div style={{ color: 'var(--gray-dim)', fontSize: 13 }}>Aucune mission.</div>;
+                    ))}
+                  </>
+                );
               })()}
 
               {tab === 'pending' && (
                 <>
-                  {['lumi', 'client'].map(owner => {
+                  {(['lumi', 'client'] as const).map(owner => {
                     const items = selected.pending.filter(p => p.owner === owner);
                     if (items.length === 0) return null;
                     return (
