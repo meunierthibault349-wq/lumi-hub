@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-06-08",
+  "objectif": "Signer 5 nouveaux clients TPE/PME",
+  "stats": {
+    "total": 0,
+    "identifie": 0,
+    "en_contact": 0,
+    "rdv_planifie": 0,
+    "proposition_envoyee": 0,
+    "signe": 0,
+    "perdu": 0
+  },
+  "_schema": {
+    "id": "PROS-001",
+    "company": "Nom de l'entreprise",
+    "sector": "Secteur d'activité",
+    "city": "Ville",
+    "contact_name": "Prénom Nom",
+    "contact_email": "email@exemple.fr",
+    "contact_phone": "+33 6 XX XX XX XX",
+    "source": "lusha | linkedin | recommandation | reseau | cold | autre",
+    "status": "identifie | en_contact | rdv_planifie | proposition_envoyee | signe | perdu",
+    "pack_cible": "Starter | Visibilité | Performance | IA | À définir",
+    "mrr_potentiel": 490,
+    "dates": {
+      "identified": "YYYY-MM-DD",
+      "first_contact": "YYYY-MM-DD ou null",
+      "rdv": "YYYY-MM-DD ou null",
+      "proposition": "YYYY-MM-DD ou null",
+      "closed": "YYYY-MM-DD ou null"
+    },
+    "notes": "Notes libres sur le prospect",
+    "next_action": "Description de la prochaine action",
+    "next_action_date": "YYYY-MM-DD ou null"
+  },
+  "prospects": []
+}
