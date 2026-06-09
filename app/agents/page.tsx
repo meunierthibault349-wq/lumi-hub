@@ -14,29 +14,14 @@ export default function AgentsPage() {
   const [streaming, setStreaming] = useState(false);
   const messagesEl = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const didAutoOpen = useRef(false);
 
-  useEffect(() => {
-    if (didAutoOpen.current) return;
-    const clientName = searchParams.get('client');
-    const agentName = searchParams.get('agent');
-    if (!clientName || !agentName) return;
-    for (const { pole, agents } of AGENTS_DATA) {
-      const found = agents.find(a => a.n === agentName && !a.recruit);
-      if (found) {
-        didAutoOpen.current = true;
-        setActiveAgent({ name: found.n, emoji: found.e, pole });
-        setMessages([{ role: 'agent', text: getWelcome(found.n, clientName) }]);
-        break;
-      }
-    }
-  }, [searchParams]);
+  const clientContext = searchParams.get('client');
 
   function openAgent(a: AgentDef, pole: string) {
     if (a.recruit) return;
     abortRef.current?.abort();
     setActiveAgent({ name: a.n, emoji: a.e, pole });
-    setMessages([{ role: 'agent', text: getWelcome(a.n) }]);
+    setMessages([{ role: 'agent', text: getWelcome(a.n, clientContext ?? undefined) }]);
     setInput('');
     setStreaming(false);
   }
@@ -137,6 +122,11 @@ export default function AgentsPage() {
       <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Agents IA</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>20 agents actifs</span>
+        {clientContext && (
+          <span style={{ fontSize: 12, fontWeight: 600, background: 'rgba(13,148,136,.15)', color: 'var(--teal-light)', padding: '3px 12px', borderRadius: 20, border: '1px solid rgba(13,148,136,.3)' }}>
+            Mode client : {clientContext}
+          </span>
+        )}
         <div style={{ marginLeft: 'auto' }} />
         <button className="btn primary">+ Recruter un agent</button>
       </div>
