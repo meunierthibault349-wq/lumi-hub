@@ -22,13 +22,13 @@ export default function ProjetsPage() {
 
   return (
     <>
-      <div style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Projets</div>
         <div style={{ marginLeft: 'auto' }} />
         <button className="btn primary">+ Nouveau projet</button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+      <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
         {CLIENTS.map(client => (
           <div key={client.id} style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.06)', borderRadius: '12px 12px 0 0', borderBottom: '1px solid rgba(255,255,255,.1)' }}>
@@ -42,12 +42,13 @@ export default function ProjetsPage() {
 
             <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.06)', borderTop: 'none', borderRadius: '0 0 12px 12px', overflow: 'hidden' }}>
               {/* Header row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px 150px 110px 80px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+              <div className="r-mhdr" style={{ display: 'grid', gridTemplateColumns: '1fr 130px 150px 110px 80px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
                 <div>Mission</div><div>Statut</div><div>Progression</div><div>Devis</div><div>Deadline</div>
               </div>
 
               {CLIENT_MISSIONS[client.id]?.map(m => (
                 <div key={m.id} onClick={() => setSelected(m)}
+                  className="r-mr"
                   style={{ display: 'grid', gridTemplateColumns: '1fr 130px 150px 110px 80px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', cursor: 'pointer', transition: 'background .1s' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
@@ -56,14 +57,14 @@ export default function ProjetsPage() {
                     <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 2 }}>{m.ref}</div>
                   </div>
                   <div><span className={`badge badge-${m.status}`}>{m.status.replace(/_/g, ' ')}</span></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div className="r-mch" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div className="progress-bar" style={{ flex: 1 }}>
                       <div className={`progress-fill${m.status === 'en_attente_client' ? ' amber' : ''}`} style={{ width: `${m.progress}%` }} />
                     </div>
                     <span style={{ fontSize: 12, color: 'var(--gray)' }}>{m.progress}%</span>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--gray)' }}>{m.devis}</div>
-                  <div style={{ fontSize: 12, color: DEADLINE_COLOR[m.status] }}>{m.deadline}</div>
+                  <div className="r-mch" style={{ fontSize: 12, color: 'var(--gray)' }}>{m.devis}</div>
+                  <div className="r-mch" style={{ fontSize: 12, color: DEADLINE_COLOR[m.status] }}>{m.deadline}</div>
                 </div>
               ))}
             </div>

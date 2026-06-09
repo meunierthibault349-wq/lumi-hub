@@ -55,14 +55,14 @@ export default function TachesPage() {
 
   return (
     <>
-      <div style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Tâches</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>{remaining} restantes</span>
         <div style={{ marginLeft: 'auto' }} />
-        <button className="btn primary" onClick={() => setShowModal(true)}>+ Ajouter une tâche</button>
+        <button className="btn primary" onClick={() => setShowModal(true)}>+ Ajouter</button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+      <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
           {PROJECTS.map(p => (
             <button key={p} className={`btn${filter === p ? ' active' : ''}`}
@@ -77,11 +77,12 @@ export default function TachesPage() {
         </div>
 
         <div className="panel">
-          <div style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px', gap: 14, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px', gap: 14, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
             <div /><div>Tâche</div><div>Projet</div><div>Échéance</div><div>Priorité</div>
           </div>
           {filtered.map(t => (
             <div key={t.id} onClick={() => toggle(t.id)}
+              className="r-tr"
               style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px', gap: 14, padding: '11px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', cursor: 'pointer', transition: 'background .1s' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
@@ -89,8 +90,8 @@ export default function TachesPage() {
                 {t.done && <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>✓</span>}
               </div>
               <div style={{ fontSize: 13, color: t.done ? 'var(--gray-dim)' : 'var(--white)', textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</div>
-              <div><span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--night-3)', color: 'var(--gray)' }}>{t.project}</span></div>
-              <div style={{ fontSize: 12, color: t.overdue ? '#f87171' : 'var(--gray)' }}>{t.due}</div>
+              <div className="r-tch"><span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--night-3)', color: 'var(--gray)' }}>{t.project}</span></div>
+              <div className="r-tch" style={{ fontSize: 12, color: t.overdue ? '#f87171' : 'var(--gray)' }}>{t.due}</div>
               <div><span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span></div>
             </div>
           ))}

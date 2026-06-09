@@ -178,3 +178,147 @@ html, body { height: 100%; margin: 0; padding: 0; }
   position: fixed; inset: 0; background: rgba(0,0,0,.6);
   z-index: 200; display: flex; align-items: center; justify-content: center;
 }
+
+/* ══════════════════════════════════════
+   BOTTOM NAV (mobile only, hidden desktop)
+   ══════════════════════════════════════ */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(60px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--night-2);
+  border-top: 1px solid rgba(255,255,255,.08);
+  z-index: 300;
+  align-items: stretch;
+  justify-content: space-around;
+}
+.bottom-nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; flex: 1; text-decoration: none;
+  color: var(--gray); font-size: 10px; font-weight: 500;
+  padding: 8px 4px; transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.bottom-nav-item.active { color: var(--teal-light); }
+.bottom-nav-item svg { flex-shrink: 0; }
+.bottom-nav-badge {
+  position: absolute; top: 6px; right: calc(50% - 18px);
+  min-width: 16px; height: 16px; border-radius: 8px;
+  background: var(--red); color: white;
+  font-size: 9px; font-weight: 700; padding: 0 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.bottom-nav-item { position: relative; }
+
+/* ══════════════════════════════════════
+   RESPONSIVE UTILITY CLASSES
+   (override inline styles with !important on mobile)
+   ══════════════════════════════════════ */
+
+/* Hide on mobile */
+.r-hm { }
+
+/* Topbar */
+.r-tb { }
+
+/* Page content container */
+.r-pc { }
+
+/* Grids */
+.r-g4 { }   /* 4-col metric grids */
+.r-g2 { }   /* 2-col panel grids */
+.r-g5 { }   /* 5-col agents grid */
+.r-gk { }   /* 4-col kanban */
+
+/* Task table */
+.r-tr { }   /* task row */
+.r-thdr { } /* task header */
+.r-tch { }  /* task col to hide */
+
+/* Mission table */
+.r-mr { }   /* mission row */
+.r-mhdr { } /* mission header */
+.r-mch { }  /* mission col to hide */
+
+/* Agents chat panel */
+.r-ac { }
+
+/* ══════════════════════════════════════
+   MOBILE BREAKPOINT — max 767px
+   ══════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* sidebar hidden, bottom nav shown */
+  .sidebar { display: none !important; }
+  .bottom-nav { display: flex !important; }
+
+  /* main content: extra bottom padding for bottom nav */
+  .r-pc { padding: 16px !important; padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+
+  /* topbar: tighter padding */
+  .r-tb { padding: 0 16px !important; }
+
+  /* hide secondary elements on mobile */
+  .r-hm { display: none !important; }
+
+  /* metric grids: 4-col → 2-col */
+  .r-g4 { grid-template-columns: repeat(2,1fr) !important; }
+
+  /* panel grids: 2-col → 1-col */
+  .r-g2 { grid-template-columns: 1fr !important; }
+
+  /* agents grid: 5-col → 3-col */
+  .r-g5 { grid-template-columns: repeat(3,1fr) !important; }
+
+  /* kanban: horizontal scroll */
+  .r-gk {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 12px !important;
+    padding-bottom: 8px !important;
+  }
+  .r-gk > div {
+    min-width: 240px !important;
+    flex-shrink: 0 !important;
+    scroll-snap-align: start;
+  }
+
+  /* task header: hide on mobile */
+  .r-thdr { display: none !important; }
+
+  /* task rows: simplified grid */
+  .r-tr { grid-template-columns: 20px 1fr 50px !important; }
+  .r-tch { display: none !important; }
+
+  /* mission header: hide on mobile */
+  .r-mhdr { display: none !important; }
+
+  /* mission rows: simplified */
+  .r-mr { grid-template-columns: 1fr auto !important; }
+  .r-mch { display: none !important; }
+
+  /* slide-over: full width */
+  .slide-over { width: 100% !important; }
+
+  /* agents chat: full-screen overlay */
+  .r-ac {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 200 !important;
+    border-left: none !important;
+    padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important;
+  }
+
+  /* iOS: prevent zoom on input focus */
+  input, select, textarea { font-size: max(16px, 1rem) !important; }
+
+  /* touch targets */
+  .btn { min-height: 44px !important; touch-action: manipulation; }
+  .task-check { width: 20px !important; height: 20px !important; }
+}

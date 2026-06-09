@@ -57,21 +57,21 @@ export default function PipelinePage() {
 
   return (
     <>
-      <div style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
-        <div className="page-title">Pipeline commercial</div>
+      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+        <div className="page-title">Pipeline</div>
         <div style={{ marginLeft: 'auto' }} />
-        <button className="btn primary" onClick={() => setShowModal(true)}>+ Ajouter un prospect</button>
+        <button className="btn primary" onClick={() => setShowModal(true)}>+ Ajouter</button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+        <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
           <div className="metric-card"><div className="metric-label">Total pipeline</div><div className="metric-val">{prospects.length}</div><div className="metric-sub">prospects identifiés</div></div>
           <div className="metric-card"><div className="metric-label">Prospects chauds</div><div className="metric-val" style={{ color: 'var(--amber)' }}>{hotCount}</div><div className="metric-sub">en discussion active</div></div>
           <div className="metric-card"><div className="metric-label">CA pipeline estimé</div><div className="metric-val" style={{ color: 'var(--teal-light)' }}>0 €</div><div className="metric-sub">si tous signés</div></div>
           <div className="metric-card"><div className="metric-label">Clients actifs</div><div className="metric-val" style={{ color: 'var(--mint)' }}>2</div><div className="metric-sub">100P + BeLoc</div></div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+        <div className="r-gk" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
           {COLS.map(col => {
             const cards = byStage(col.id);
             return (

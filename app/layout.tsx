@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import './globals.css';
 import Sidebar from '@/components/Sidebar';
+import BottomNav from '@/components/BottomNav';
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -18,6 +19,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Lumi Hub',
   description: 'Cabinet de conseil Lumi — Espace de travail centralisé',
+  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -31,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1 flex flex-col overflow-hidden">
           {children}
         </main>
+        <BottomNav />
       </body>
     </html>
   );

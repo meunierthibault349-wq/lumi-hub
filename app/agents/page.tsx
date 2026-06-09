@@ -113,7 +113,7 @@ export default function AgentsPage() {
 
   return (
     <>
-      <div style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Agents IA</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>20 agents actifs</span>
         <div style={{ marginLeft: 'auto' }} />
@@ -128,7 +128,7 @@ export default function AgentsPage() {
               <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: 700, color: 'var(--gray)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid rgba(255,255,255,.06)' }}>
                 {pole} — {agents.filter(a => !a.recruit).length} agents
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
+              <div className="r-g5" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
                 {agents.map(a => (
                   <div key={a.n}
                     onClick={() => openAgent(a, pole)}
@@ -149,7 +149,7 @@ export default function AgentsPage() {
 
         {/* Chat panel */}
         {activeAgent && (
-          <div style={{ width: 380, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.06)', display: 'flex', flexDirection: 'column', background: 'var(--night-2)' }}>
+          <div className="r-ac" style={{ width: 380, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.06)', display: 'flex', flexDirection: 'column', background: 'var(--night-2)' }}>
             {/* Header */}
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12 }}>
               <div className="agent-avatar-wrap" style={{ width: 36, height: 36, fontSize: 18, flexShrink: 0 }}>{activeAgent.emoji}</div>

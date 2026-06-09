@@ -37,15 +37,16 @@ export default function Dashboard() {
 
   return (
     <>
-      <div style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Dashboard</div>
-        <div style={{ color: 'var(--gray)', fontSize: 13, marginLeft: 'auto' }}>{dateStr}</div>
-        <button className="btn" onClick={() => router.push('/agents')}>⚡ Lancer un agent</button>
-        <button className="btn primary" onClick={() => router.push('/projets')}>+ Nouveau projet</button>
+        <div className="r-hm" style={{ color: 'var(--gray)', fontSize: 13, marginLeft: 'auto' }}>{dateStr}</div>
+        <div style={{ marginLeft: 'auto' }} className="r-hm" />
+        <button className="btn r-hm" onClick={() => router.push('/agents')}>⚡ Lancer un agent</button>
+        <button className="btn primary r-hm" onClick={() => router.push('/projets')}>+ Nouveau projet</button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
+      <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+        <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
           <div className="metric-card">
             <div className="metric-label">MRR actuel</div>
             <div className="metric-val" style={{ color: 'var(--teal-light)' }}>490 €</div>
@@ -69,7 +70,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <div className="r-g2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title">Tâches du jour</div>
@@ -127,7 +128,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="r-g2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <div className="panel">
             <div className="panel-header"><div className="panel-title">Jalons à venir</div></div>
             <div>
