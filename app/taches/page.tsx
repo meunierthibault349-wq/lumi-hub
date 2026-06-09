@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { INITIAL_TASKS, Task } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { supabase, TaskRow } from '@/lib/supabase';
 
 const PROJECTS = ['all', 'BeLoc', '100P', 'Lumi Cabinet', 'Interne', 'Prospection'];
 const PROJECT_LABELS: Record<string, string> = { all: 'Toutes', BeLoc: 'BeLoc', '100P': '100P', 'Lumi Cabinet': 'Cabinet', Interne: 'Interne', Prospection: 'Prospection' };
@@ -8,11 +8,18 @@ const PROJECT_LABELS: Record<string, string> = { all: 'Toutes', BeLoc: 'BeLoc', 
 function pClass(p: number) { return p >= 8 ? 'p-high' : p >= 6 ? 'p-mid' : 'p-low'; }
 
 export default function TachesPage() {
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
+  const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', project: 'BeLoc', priority: 6, due: '' });
+
+  useEffect(() => { loadTasks(); }, []);
+
+  async function loadTasks() {
+    const { data } = await supabase.from('tasks').select('*').order('priority', { ascending: false });
+    if (data) setTasks(data);
+  }
 
   const filtered = tasks.filter(t => {
     const matchProject = filter === 'all' || t.project === filter;
@@ -22,15 +29,28 @@ export default function TachesPage() {
 
   const remaining = tasks.filter(t => !t.done).length;
 
-  function toggle(id: string) {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  async function toggle(id: string) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    const { error } = await supabase.from('tasks').update({ done: !task.done }).eq('id', id);
+    if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
   }
 
-  function addTask() {
+  async function addTask() {
     if (!newTask.title.trim()) return;
-    setTasks(prev => [{ id: 't' + Date.now(), ...newTask, overdue: false, done: false }, ...prev]);
-    setNewTask({ title: '', project: 'BeLoc', priority: 6, due: '' });
-    setShowModal(false);
+    const { data, error } = await supabase.from('tasks').insert([{
+      title: newTask.title,
+      project: newTask.project,
+      priority: newTask.priority,
+      due: newTask.due,
+      done: false,
+      overdue: false,
+    }]).select().single();
+    if (!error && data) {
+      setTasks(prev => [data, ...prev]);
+      setNewTask({ title: '', project: 'BeLoc', priority: 6, due: '' });
+      setShowModal(false);
+    }
   }
 
   return (
@@ -43,7 +63,6 @@ export default function TachesPage() {
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-        {/* Toolbar */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
           {PROJECTS.map(p => (
             <button key={p} className={`btn${filter === p ? ' active' : ''}`}
@@ -57,7 +76,6 @@ export default function TachesPage() {
             style={{ marginLeft: 'auto', padding: '7px 14px', background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', width: 220 }} />
         </div>
 
-        {/* Table */}
         <div className="panel">
           <div style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px', gap: 14, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
             <div /><div>Tâche</div><div>Projet</div><div>Échéance</div><div>Priorité</div>
@@ -76,11 +94,14 @@ export default function TachesPage() {
               <div><span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span></div>
             </div>
           ))}
-          {filtered.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Aucune tâche</div>}
+          {filtered.length === 0 && (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>
+              {tasks.length === 0 ? 'Chargement…' : 'Aucune tâche'}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, width: 480, maxWidth: '95vw', overflow: 'hidden' }}>
@@ -89,7 +110,7 @@ export default function TachesPage() {
               <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setShowModal(false)}>x</button>
             </div>
             <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div><label className="form-label">Titre</label><input className="form-input" value={newTask.title} onChange={e => setNewTask(p => ({ ...p, title: e.target.value }))} placeholder="Description de la tâche…" autoFocus /></div>
+              <div><label className="form-label">Titre</label><input className="form-input" value={newTask.title} onChange={e => setNewTask(p => ({ ...p, title: e.target.value }))} placeholder="Description de la tâche…" autoFocus onKeyDown={e => e.key === 'Enter' && addTask()} /></div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div><label className="form-label">Projet</label>
                   <select className="form-select" value={newTask.project} onChange={e => setNewTask(p => ({ ...p, project: e.target.value }))}>

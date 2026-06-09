@@ -1,35 +1,42 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { INITIAL_TASKS, MISSIONS, Task } from '@/lib/data';
+import { supabase, TaskRow } from '@/lib/supabase';
+import { MISSIONS, Mission } from '@/lib/data';
 import MissionSlideOver from '@/components/MissionSlideOver';
-import { Mission } from '@/lib/data';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [tasks, setTasks] = useState<Task[]>(INITIAL_TASKS);
+  const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
 
-  const remaining = tasks.filter(t => !t.done).length;
-  const urgent = tasks.filter(t => !t.done && t.priority >= 7).length;
-  const topTasks = tasks.filter(t => !t.done).slice(0, 5);
+  useEffect(() => { loadTasks(); }, []);
 
-  function toggleTask(id: string) {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  async function loadTasks() {
+    const { data } = await supabase.from('tasks').select('*').order('priority', { ascending: false });
+    if (data) setTasks(data);
+  }
+
+  async function toggleTask(id: string) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    const { error } = await supabase.from('tasks').update({ done: !task.done }).eq('id', id);
+    if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
   }
 
   function pClass(p: number) { return p >= 8 ? 'p-high' : p >= 6 ? 'p-mid' : 'p-low'; }
 
-  const now = new Date(2026, 5, 9);
+  const now = new Date();
   const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   const dateStr = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
   const activeMissions = MISSIONS.filter(m => m.status !== 'livré');
+  const urgent = tasks.filter(t => !t.done && t.priority >= 7).length;
+  const topTasks = tasks.filter(t => !t.done).slice(0, 5);
 
   return (
     <>
-      {/* Topbar */}
       <div style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Dashboard</div>
         <div style={{ color: 'var(--gray)', fontSize: 13, marginLeft: 'auto' }}>{dateStr}</div>
@@ -37,10 +44,7 @@ export default function Dashboard() {
         <button className="btn primary" onClick={() => router.push('/projets')}>+ Nouveau projet</button>
       </div>
 
-      {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-
-        {/* Metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
           <div className="metric-card">
             <div className="metric-label">MRR actuel</div>
@@ -65,10 +69,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Two cols */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-
-          {/* Tâches du jour */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title">Tâches du jour</div>
@@ -86,11 +87,14 @@ export default function Dashboard() {
                   <span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span>
                 </div>
               ))}
-              {topTasks.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Toutes les tâches sont terminées ✓</div>}
+              {topTasks.length === 0 && (
+                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>
+                  {tasks.length === 0 ? 'Chargement…' : 'Toutes les tâches sont terminées ✓'}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Projets actifs */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title">Projets actifs</div>
@@ -123,9 +127,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bottom row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          {/* Jalons */}
           <div className="panel">
             <div className="panel-header"><div className="panel-title">Jalons à venir</div></div>
             <div>
@@ -151,7 +153,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Agents */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title">Agents actifs</div>

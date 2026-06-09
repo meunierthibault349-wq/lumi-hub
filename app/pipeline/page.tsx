@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { INITIAL_PIPELINE, Prospect } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { supabase, ProspectRow } from '@/lib/supabase';
 
 const COLS = [
   { id: 'froid',    label: 'Froid',    color: 'var(--gray)' },
@@ -8,42 +8,50 @@ const COLS = [
   { id: 'chaud',    label: 'Chaud',    color: 'var(--amber)' },
   { id: 'signe',    label: 'Signé',    color: 'var(--mint)' },
 ];
-
 const NAME_COLOR: Record<string, string> = { froid: 'var(--white)', contacte: 'var(--teal-light)', chaud: 'var(--amber-light)', signe: 'var(--mint)' };
 
 export default function PipelinePage() {
-  const [pipeline, setPipeline] = useState<Record<string, Prospect[]>>(
-    JSON.parse(JSON.stringify(INITIAL_PIPELINE))
-  );
+  const [prospects, setProspects] = useState<ProspectRow[]>([]);
   const [dragging, setDragging] = useState<{ id: string; from: string } | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [targetCol, setTargetCol] = useState('froid');
   const [form, setForm] = useState({ name: '', sector: '', pack: '' });
 
-  const allCards = Object.values(pipeline).flat();
-  const hotCount = pipeline.chaud?.length ?? 0;
+  useEffect(() => { loadProspects(); }, []);
 
-  function addProspect() {
+  async function loadProspects() {
+    const { data } = await supabase.from('prospects').select('*').order('created_at', { ascending: true });
+    if (data) setProspects(data);
+  }
+
+  function byStage(stage: string) { return prospects.filter(p => p.stage === stage); }
+
+  const hotCount = byStage('chaud').length;
+
+  async function addProspect() {
     if (!form.name.trim()) return;
     const tags = form.pack ? [form.pack] : [];
-    setPipeline(prev => ({ ...prev, [targetCol]: [...(prev[targetCol] || []), { id: 'p' + Date.now(), name: form.name, sector: form.sector || 'À compléter', tags }] }));
-    setForm({ name: '', sector: '', pack: '' });
-    setShowModal(false);
+    const { data, error } = await supabase.from('prospects').insert([{
+      name: form.name,
+      sector: form.sector || 'À compléter',
+      tags,
+      stage: targetCol,
+    }]).select().single();
+    if (!error && data) {
+      setProspects(prev => [...prev, data]);
+      setForm({ name: '', sector: '', pack: '' });
+      setShowModal(false);
+    }
   }
 
   function onDragStart(id: string, from: string) { setDragging({ id, from }); }
   function onDragOver(e: React.DragEvent, col: string) { e.preventDefault(); setDragOver(col); }
-  function onDrop(col: string) {
+
+  async function onDrop(col: string) {
     if (!dragging || dragging.from === col) { setDragging(null); setDragOver(null); return; }
-    setPipeline(prev => {
-      const card = prev[dragging.from].find(p => p.id === dragging.id)!;
-      return {
-        ...prev,
-        [dragging.from]: prev[dragging.from].filter(p => p.id !== dragging.id),
-        [col]: [...(prev[col] || []), card],
-      };
-    });
+    const { error } = await supabase.from('prospects').update({ stage: col }).eq('id', dragging.id);
+    if (!error) setProspects(prev => prev.map(p => p.id === dragging.id ? { ...p, stage: col as ProspectRow['stage'] } : p));
     setDragging(null); setDragOver(null);
   }
 
@@ -56,18 +64,16 @@ export default function PipelinePage() {
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-        {/* Metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
-          <div className="metric-card"><div className="metric-label">Total pipeline</div><div className="metric-val">{allCards.length}</div><div className="metric-sub">prospects identifiés</div></div>
+          <div className="metric-card"><div className="metric-label">Total pipeline</div><div className="metric-val">{prospects.length}</div><div className="metric-sub">prospects identifiés</div></div>
           <div className="metric-card"><div className="metric-label">Prospects chauds</div><div className="metric-val" style={{ color: 'var(--amber)' }}>{hotCount}</div><div className="metric-sub">en discussion active</div></div>
           <div className="metric-card"><div className="metric-label">CA pipeline estimé</div><div className="metric-val" style={{ color: 'var(--teal-light)' }}>0 €</div><div className="metric-sub">si tous signés</div></div>
           <div className="metric-card"><div className="metric-label">Clients actifs</div><div className="metric-val" style={{ color: 'var(--mint)' }}>2</div><div className="metric-sub">100P + BeLoc</div></div>
         </div>
 
-        {/* Kanban */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
           {COLS.map(col => {
-            const cards = pipeline[col.id] || [];
+            const cards = byStage(col.id);
             return (
               <div key={col.id}
                 onDragOver={e => onDragOver(e, col.id)}
@@ -108,7 +114,6 @@ export default function PipelinePage() {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, width: 480, maxWidth: '95vw', overflow: 'hidden' }}>
