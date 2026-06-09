@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, TaskRow } from '@/lib/supabase';
-import { MISSIONS, Mission } from '@/lib/data';
+import { MISSIONS, Mission, MILESTONES, MRR_TOTAL, MRR_OBJECTIF } from '@/lib/data';
 import MissionSlideOver from '@/components/MissionSlideOver';
 
 export default function Dashboard() {
@@ -35,6 +35,29 @@ export default function Dashboard() {
   const urgent = tasks.filter(t => !t.done && t.priority >= 7).length;
   const topTasks = tasks.filter(t => !t.done).slice(0, 5);
 
+  function daysUntil(dateStr: string): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr);
+    return Math.ceil((target.getTime() - today.getTime()) / 86400000);
+  }
+
+  function daysLabel(d: number): string {
+    if (d < 0) return `${Math.abs(d)}j de retard`;
+    if (d === 0) return "Aujourd'hui";
+    return `${d} jour${d > 1 ? 's' : ''}`;
+  }
+
+  function daysCls(d: number): 'days-urgent' | 'days-warn' | 'days-ok' {
+    if (d <= 7) return 'days-urgent';
+    if (d <= 14) return 'days-warn';
+    return 'days-ok';
+  }
+
+  const milestonesWithDays = MILESTONES.map(m => ({ ...m, d: daysUntil(m.date) }));
+  const nextMilestone = [...milestonesWithDays].sort((a, b) => a.d - b.d)[0];
+  const mrrPct = Math.min(100, (MRR_TOTAL / MRR_OBJECTIF) * 100).toFixed(1);
+
   return (
     <>
       <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
@@ -49,9 +72,9 @@ export default function Dashboard() {
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
           <div className="metric-card">
             <div className="metric-label">MRR actuel</div>
-            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>490 €</div>
-            <div className="metric-sub">Objectif : 5 000 €/mois</div>
-            <div className="progress-bar" style={{ marginTop: 10 }}><div className="progress-fill" style={{ width: '9.8%' }} /></div>
+            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{MRR_TOTAL.toLocaleString('fr-FR')} €</div>
+            <div className="metric-sub">Objectif : {MRR_OBJECTIF.toLocaleString('fr-FR')} €/mois · {mrrPct}%</div>
+            <div className="progress-bar" style={{ marginTop: 10 }}><div className="progress-fill" style={{ width: `${mrrPct}%` }} /></div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Projets actifs</div>
@@ -65,8 +88,10 @@ export default function Dashboard() {
           </div>
           <div className="metric-card">
             <div className="metric-label">Prochain jalon</div>
-            <div className="metric-val" style={{ fontSize: 18, color: '#f87171' }}>6 jours</div>
-            <div className="metric-sub">BeLoc — deadline 15 juin</div>
+            <div className="metric-val" style={{ fontSize: 18, color: nextMilestone.d <= 7 ? '#f87171' : nextMilestone.d <= 14 ? 'var(--amber)' : 'var(--mint)' }}>
+              {daysLabel(nextMilestone.d)}
+            </div>
+            <div className="metric-sub">{nextMilestone.title.split(' — ')[0]} · {new Date(nextMilestone.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
           </div>
         </div>
 
@@ -132,25 +157,25 @@ export default function Dashboard() {
           <div className="panel">
             <div className="panel-header"><div className="panel-title">Jalons à venir</div></div>
             <div>
-              {[
-                { color: '#f87171', title: 'BeLoc — Livraison site marchand', date: '15 juin 2026', days: '6 jours', cls: 'days-urgent' },
-                { color: 'var(--amber)', title: '100P — Calendrier éditorial juillet', date: '15 juin 2026', days: '6 jours', cls: 'days-warn' },
-                { color: 'var(--mint)', title: 'Point mensuel clients', date: '25 juin 2026', days: '16 jours', cls: 'days-ok' },
-                { color: 'var(--mint)', title: 'Outil IA Rôtisserie — livraison estimée', date: '31 juil. 2026', days: '52 jours', cls: 'days-ok' },
-              ].map((j, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'flex-start' }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: j.color, marginTop: 4, flexShrink: 0 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13 }}>{j.title}</div>
-                    <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 2 }}>{j.date}</div>
+              {milestonesWithDays.map((j, i) => {
+                const cls = daysCls(j.d);
+                const bg = cls === 'days-urgent' ? 'rgba(239,68,68,.2)' : cls === 'days-warn' ? 'rgba(239,159,39,.2)' : 'rgba(93,202,165,.15)';
+                const col = cls === 'days-urgent' ? '#f87171' : cls === 'days-warn' ? 'var(--amber)' : 'var(--mint)';
+                return (
+                  <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'flex-start' }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: j.clientColor, marginTop: 4, flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13 }}>{j.title}</div>
+                      <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 2 }}>
+                        {new Date(j.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap', alignSelf: 'center', background: bg, color: col }}>
+                      {daysLabel(j.d)}
+                    </span>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap', alignSelf: 'center',
-                    background: j.cls === 'days-urgent' ? 'rgba(239,68,68,.2)' : j.cls === 'days-warn' ? 'rgba(239,159,39,.2)' : 'rgba(93,202,165,.15)',
-                    color: j.cls === 'days-urgent' ? '#f87171' : j.cls === 'days-warn' ? 'var(--amber-light)' : 'var(--mint)' }}>
-                    {j.days}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

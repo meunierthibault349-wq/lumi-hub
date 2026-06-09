@@ -134,6 +134,23 @@ export const AGENTS_DATA: PoleData[] = [
   ]},
 ];
 
+export const MRR_TOTAL = 1380;
+export const MRR_OBJECTIF = 5000;
+
+export interface Milestone {
+  title: string;
+  date: string;
+  color: string;
+  clientColor: string;
+}
+
+export const MILESTONES: Milestone[] = [
+  { title: 'BeLoc — Livraison site marchand', date: '2026-06-15', color: '#f87171', clientColor: '#C9A96E' },
+  { title: '100P — Calendrier éditorial juillet', date: '2026-06-15', color: 'var(--amber)', clientColor: '#8B1E2F' },
+  { title: 'Point mensuel clients', date: '2026-06-25', color: 'var(--mint)', clientColor: 'var(--mint)' },
+  { title: 'Outil IA Rôtisserie — livraison estimée', date: '2026-07-31', color: 'var(--mint)', clientColor: '#8B1E2F' },
+];
+
 export const AGENT_RESPONSES: Record<string, string[]> = {
   'Web Developer': ['Je prends en charge le développement. Quel site ou module veux-tu que je construise ?'],
   'Instagram': ['Prêt à créer du contenu Instagram. Quel client et quel type de post ?'],
