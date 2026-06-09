@@ -36,6 +36,18 @@ export default function TachesPage() {
     if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
   }
 
+  async function deleteTask(id: string) {
+    await supabase.from('tasks').delete().eq('id', id);
+    setTasks(prev => prev.filter(t => t.id !== id));
+  }
+
+  async function clearDone() {
+    const ids = tasks.filter(t => t.done).map(t => t.id);
+    if (!ids.length) return;
+    await supabase.from('tasks').delete().in('id', ids);
+    setTasks(prev => prev.filter(t => !t.done));
+  }
+
   async function addTask() {
     if (!newTask.title.trim()) return;
     const { data, error } = await supabase.from('tasks').insert([{
@@ -59,6 +71,11 @@ export default function TachesPage() {
         <div className="page-title">Tâches</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>{remaining} restantes</span>
         <div style={{ marginLeft: 'auto' }} />
+        {tasks.some(t => t.done) && (
+          <button className="btn" onClick={clearDone} style={{ fontSize: 12, color: 'var(--gray)' }}>
+            Effacer terminées ({tasks.filter(t => t.done).length})
+          </button>
+        )}
         <button className="btn primary" onClick={() => setShowModal(true)}>+ Ajouter</button>
       </div>
 
@@ -77,22 +94,28 @@ export default function TachesPage() {
         </div>
 
         <div className="panel">
-          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px', gap: 14, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
-            <div /><div>Tâche</div><div>Projet</div><div>Échéance</div><div>Priorité</div>
+          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px 28px', gap: 14, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+            <div /><div>Tâche</div><div>Projet</div><div>Échéance</div><div>Priorité</div><div />
           </div>
           {filtered.map(t => (
-            <div key={t.id} onClick={() => toggle(t.id)}
+            <div key={t.id}
               className="r-tr"
-              style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px', gap: 14, padding: '11px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', cursor: 'pointer', transition: 'background .1s' }}
+              style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px 28px', gap: 14, padding: '11px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              <div className={`task-check${t.done ? ' done' : ''}`}>
+              <div className={`task-check${t.done ? ' done' : ''}`} onClick={() => toggle(t.id)} style={{ cursor: 'pointer' }}>
                 {t.done && <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>✓</span>}
               </div>
-              <div style={{ fontSize: 13, color: t.done ? 'var(--gray-dim)' : 'var(--white)', textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</div>
+              <div onClick={() => toggle(t.id)} style={{ fontSize: 13, color: t.done ? 'var(--gray-dim)' : 'var(--white)', textDecoration: t.done ? 'line-through' : 'none', cursor: 'pointer' }}>{t.title}</div>
               <div className="r-tch"><span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--night-3)', color: 'var(--gray)' }}>{t.project}</span></div>
               <div className="r-tch" style={{ fontSize: 12, color: t.overdue ? '#f87171' : 'var(--gray)' }}>{t.due}</div>
               <div><span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span></div>
+              <button onClick={() => deleteTask(t.id)}
+                style={{ width: 26, height: 26, borderRadius: 6, background: 'transparent', border: '1px solid transparent', color: 'var(--gray-dim)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,.12)'; (e.currentTarget as HTMLButtonElement).style.color = '#f87171'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,.2)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray-dim)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent'; }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+              </button>
             </div>
           ))}
           {filtered.length === 0 && (
