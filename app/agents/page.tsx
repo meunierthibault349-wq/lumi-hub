@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AGENTS_DATA, AgentDef } from '@/lib/data';
+import type { jsPDF as JsPDFType } from 'jspdf';
 
 interface ChatMessage { role: 'agent' | 'user'; text: string; }
 interface ActiveAgent { name: string; emoji: string; pole: string; }
@@ -117,6 +118,68 @@ function AgentsInner() {
     if (messagesEl.current) messagesEl.current.scrollTop = messagesEl.current.scrollHeight;
   }, [messages, streaming]);
 
+  async function exportPDF() {
+    if (!activeAgent || messages.length < 2) return;
+    const { default: jsPDF } = await import('jspdf') as { default: new (...a: unknown[]) => JsPDFType };
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' }) as JsPDFType;
+    const pageW = 210; const pageH = 297; const margin = 14; const contentW = pageW - margin * 2;
+
+    // Header band
+    doc.setFillColor(13, 148, 136);
+    doc.rect(0, 0, pageW, 22, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('LUMI', margin, 14);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Agent : ${activeAgent.name}${clientContext ? ` — ${clientContext}` : ''}`, margin + 20, 14);
+    const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    doc.text(dateStr, pageW - margin - doc.getTextWidth(dateStr), 14);
+
+    let y = 32;
+
+    messages.forEach((m, idx) => {
+      if (idx === 0 && m.role === 'agent') return; // skip welcome
+      const isUser = m.role === 'user';
+
+      // Role label
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(isUser ? 30 : 13, isUser ? 30 : 148, isUser ? 180 : 136);
+      doc.text(isUser ? 'Thibault' : activeAgent.name, margin, y);
+      y += 5;
+
+      // Message body
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      const clean = m.text.replace(/\*\*/g, '').replace(/\*/g, '');
+      const lines = doc.splitTextToSize(clean, contentW);
+      lines.forEach((line: string) => {
+        if (y > pageH - 20) { doc.addPage(); y = 20; }
+        doc.text(line, margin, y);
+        y += 5.5;
+      });
+      y += 4;
+    });
+
+    // Footer
+    const pages = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(220, 220, 220);
+      doc.line(margin, pageH - 12, pageW - margin, pageH - 12);
+      doc.setFontSize(8);
+      doc.setTextColor(160, 160, 160);
+      doc.text('Genere par Lumi Hub — hub.lumi-site.fr', margin, pageH - 7);
+      doc.text(`${i} / ${pages}`, pageW - margin - 10, pageH - 7);
+    }
+
+    const slug = activeAgent.name.toLowerCase().replace(/\s+/g, '-');
+    doc.save(`lumi-${slug}-${new Date().toISOString().split('T')[0]}.pdf`);
+  }
+
   return (
     <>
       <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
@@ -171,6 +234,14 @@ function AgentsInner() {
                   {streaming ? 'En train d\'écrire…' : 'En ligne'}
                 </div>
               </div>
+              {messages.length > 1 && (
+                <button
+                  onClick={exportPDF}
+                  title="Exporter en PDF"
+                  style={{ width: 28, height: 28, padding: 0, background: 'rgba(13,148,136,.15)', border: '1px solid rgba(13,148,136,.3)', borderRadius: 6, color: 'var(--teal-light)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                </button>
+              )}
               <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => { abortRef.current?.abort(); setActiveAgent(null); }}>×</button>
             </div>
 
