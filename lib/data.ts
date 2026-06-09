@@ -134,6 +134,18 @@ export const AGENTS_DATA: PoleData[] = [
   ]},
 ];
 
+export const CLIENTS_SUMMARY = [
+  { id: 'CLT-001', name: '100P Location', color: '#8B1E2F', pendingLumi: 5, pendingClient: 1, mrr: 490 },
+  { id: 'CLT-002', name: 'BeLoc', color: '#C9A96E', pendingLumi: 2, pendingClient: 8, mrr: 890 },
+];
+
+export const MORNING_AGENTS = [
+  { e: '🌐', n: 'Web Developer', reason: 'Site BeLoc à finaliser' },
+  { e: '🤝', n: 'Account Manager', reason: 'Relance BeLoc infos manquantes' },
+  { e: '📱', n: 'Instagram', reason: 'Calendrier 100P juillet' },
+  { e: '💰', n: 'Finance', reason: 'Facture BeLoc juin à envoyer' },
+];
+
 export const MRR_TOTAL = 1380;
 export const MRR_OBJECTIF = 5000;
 
