@@ -216,7 +216,7 @@ export default function ClientsPage() {
       {selected && (
         <>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100 }} onClick={() => setSelected(null)} />
-          <div className="slide-over open" style={{ width: 480 }}>
+          <div className="slide-over open" style={{ width: 480, zIndex: 200 }}>
             {/* Header */}
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ width: 40, height: 40, borderRadius: 10, background: selected.color + '22', border: `1px solid ${selected.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -332,11 +332,15 @@ export default function ClientsPage() {
               )}
             </div>
 
-            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 10 }}>
-              <button className="btn" style={{ flex: 1 }} onClick={() => setSelected(null)}>Fermer</button>
-              <button className="btn primary" style={{ flex: 1 }} onClick={e => { e.stopPropagation(); launchAgent(selected.name); }}>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 10, position: 'relative', zIndex: 200 }}>
+              <button className="btn" style={{ flex: 1 }} onClick={e => { e.stopPropagation(); setSelected(null); }}>Fermer</button>
+              <a
+                href={`/agents?client=${encodeURIComponent(selected.name)}`}
+                onClick={e => e.stopPropagation()}
+                className="btn primary"
+                style={{ flex: 1, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 ⚡ Lancer un agent
-              </button>
+              </a>
             </div>
           </div>
         </>
