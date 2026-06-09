@@ -1,12 +1,12 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AGENTS_DATA, AgentDef } from '@/lib/data';
 
 interface ChatMessage { role: 'agent' | 'user'; text: string; }
 interface ActiveAgent { name: string; emoji: string; pole: string; }
 
-export default function AgentsPage() {
+function AgentsInner() {
   const searchParams = useSearchParams();
   const [activeAgent, setActiveAgent] = useState<ActiveAgent | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -222,5 +222,13 @@ export default function AgentsPage() {
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
       `}</style>
     </>
+  );
+}
+
+export default function AgentsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AgentsInner />
+    </Suspense>
   );
 }

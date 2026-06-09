@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { MISSIONS } from '@/lib/data';
 
 const SUGGESTED_AGENTS: Record<string, { e: string; n: string }[]> = {
@@ -91,7 +90,6 @@ const STATUS_BG: Record<string, string> = {
 };
 
 export default function ClientsPage() {
-  const router = useRouter();
   const [selected, setSelected] = useState<ClientDef | null>(null);
   const [tab, setTab] = useState<'missions' | 'pending' | 'notes'>('missions');
   const [agentPicker, setAgentPicker] = useState(false);
@@ -99,7 +97,7 @@ export default function ClientsPage() {
   function openClient(c: ClientDef) { setSelected(c); setTab('missions'); setAgentPicker(false); }
 
   function launchAgent(clientName: string) {
-    router.push(`/agents?client=${encodeURIComponent(clientName)}`);
+    window.location.href = `/agents?client=${encodeURIComponent(clientName)}`;
   }
 
   const totalMrr = CLIENTS.reduce((s, c) => s + c.mrr, 0);
