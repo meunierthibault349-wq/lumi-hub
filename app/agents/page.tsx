@@ -1,17 +1,36 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AGENTS_DATA, AgentDef } from '@/lib/data';
 
 interface ChatMessage { role: 'agent' | 'user'; text: string; }
 interface ActiveAgent { name: string; emoji: string; pole: string; }
 
 export default function AgentsPage() {
+  const searchParams = useSearchParams();
   const [activeAgent, setActiveAgent] = useState<ActiveAgent | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
   const messagesEl = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const didAutoOpen = useRef(false);
+
+  useEffect(() => {
+    if (didAutoOpen.current) return;
+    const clientName = searchParams.get('client');
+    const agentName = searchParams.get('agent');
+    if (!clientName || !agentName) return;
+    for (const { pole, agents } of AGENTS_DATA) {
+      const found = agents.find(a => a.n === agentName && !a.recruit);
+      if (found) {
+        didAutoOpen.current = true;
+        setActiveAgent({ name: found.n, emoji: found.e, pole });
+        setMessages([{ role: 'agent', text: getWelcome(found.n, clientName) }]);
+        break;
+      }
+    }
+  }, [searchParams]);
 
   function openAgent(a: AgentDef, pole: string) {
     if (a.recruit) return;
@@ -22,7 +41,8 @@ export default function AgentsPage() {
     setStreaming(false);
   }
 
-  function getWelcome(name: string): string {
+  function getWelcome(name: string, clientName?: string): string {
+    const ctx = clientName ? ` Je travaille sur le dossier **${clientName}**.` : '';
     const welcomes: Record<string, string> = {
       'Web Developer': 'Prêt à coder. Quel site ou module tu veux que je construise ?',
       'Instagram': 'Prêt pour le contenu Instagram. Quel client et quel type de post ?',
@@ -45,7 +65,8 @@ export default function AgentsPage() {
       'Google My Business': 'Prêt pour GMB. Quel client et quel type de contenu ?',
       'Contenu Lumi': 'Prêt pour le contenu Lumi. Post LinkedIn, étude de cas ou autre ?',
     };
-    return welcomes[name] ?? 'Bonjour, je suis prêt. Quelle est ta demande ?';
+    const base = welcomes[name] ?? 'Bonjour, je suis prêt. Quelle est ta demande ?';
+    return clientName ? base.replace(/\.$/, '') + ctx : base;
   }
 
   async function sendMessage() {

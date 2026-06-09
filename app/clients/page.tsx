@@ -1,6 +1,20 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { MISSIONS } from '@/lib/data';
+
+const SUGGESTED_AGENTS: Record<string, { e: string; n: string }[]> = {
+  'CLT-001': [
+    { e: '📱', n: 'Instagram' }, { e: '👤', n: 'Facebook' },
+    { e: '🔍', n: 'SEO' }, { e: '📍', n: 'Google My Business' },
+    { e: '🤝', n: 'Account Manager' }, { e: '📋', n: 'Devis' },
+  ],
+  'CLT-002': [
+    { e: '🌐', n: 'Web Developer' }, { e: '📣', n: 'Meta Ads' },
+    { e: '🔍', n: 'SEO' }, { e: '🤝', n: 'Account Manager' },
+    { e: '✉️', n: 'Email Marketing' }, { e: '📊', n: 'Analytics' },
+  ],
+};
 
 interface PendingItem { text: string; owner: 'lumi' | 'client'; }
 
@@ -77,10 +91,16 @@ const STATUS_BG: Record<string, string> = {
 };
 
 export default function ClientsPage() {
+  const router = useRouter();
   const [selected, setSelected] = useState<ClientDef | null>(null);
   const [tab, setTab] = useState<'missions' | 'pending' | 'notes'>('missions');
+  const [agentPicker, setAgentPicker] = useState(false);
 
-  function openClient(c: ClientDef) { setSelected(c); setTab('missions'); }
+  function openClient(c: ClientDef) { setSelected(c); setTab('missions'); setAgentPicker(false); }
+
+  function launchAgent(clientId: string, clientName: string, agent: { n: string }) {
+    router.push(`/agents?client=${encodeURIComponent(clientName)}&agent=${encodeURIComponent(agent.n)}`);
+  }
 
   const totalMrr = CLIENTS.reduce((s, c) => s + c.mrr, 0);
   const totalPending = CLIENTS.reduce((s, c) => s + c.pending.length, 0);
@@ -314,9 +334,31 @@ export default function ClientsPage() {
               )}
             </div>
 
-            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 10 }}>
-              <button className="btn" style={{ flex: 1 }} onClick={() => setSelected(null)}>Fermer</button>
-              <button className="btn primary" style={{ flex: 1 }}>Lancer un agent</button>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
+              {agentPicker && (
+                <div style={{ padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 10 }}>
+                    Choisir un agent pour {selected.name}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                    {(SUGGESTED_AGENTS[selected.id] ?? []).map(a => (
+                      <button key={a.n} onClick={() => launchAgent(selected.id, selected.name, a)}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 8px', background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(13,148,136,.4)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(13,148,136,.08)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.08)'; (e.currentTarget as HTMLButtonElement).style.background = 'var(--night-3)'; }}>
+                        <span style={{ fontSize: 18 }}>{a.e}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--white)', textAlign: 'center', lineHeight: 1.2 }}>{a.n}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div style={{ padding: '16px 24px', display: 'flex', gap: 10 }}>
+                <button className="btn" style={{ flex: 1 }} onClick={() => setSelected(null)}>Fermer</button>
+                <button className="btn primary" style={{ flex: 1 }} onClick={() => setAgentPicker(p => !p)}>
+                  {agentPicker ? 'Annuler' : '⚡ Lancer un agent'}
+                </button>
+              </div>
             </div>
           </div>
         </>
