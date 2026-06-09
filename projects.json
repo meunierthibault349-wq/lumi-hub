@@ -1,0 +1,122 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-06-08",
+  "clients": [
+    {
+      "id": "CLT-001",
+      "name": "100P Location",
+      "full_name": "TYT03 — Jean Charles Taret",
+      "sector": "Location voiture sans permis",
+      "accent": "#8B1E2F",
+      "contact": "Jean Charles Taret",
+      "missions": [
+        {
+          "id": "PRJ-2026-001",
+          "title": "Site Internet 100P Location",
+          "status": "livré",
+          "progress": 100,
+          "priority": "normale",
+          "devis": {
+            "ref": "DEV-2026-100P-01",
+            "one_shot": 1400,
+            "abonnement": null,
+            "statut": "signé",
+            "url": "livrables/clients/100P/site-100p/index.html"
+          },
+          "dates": {
+            "start": "2026-06-08",
+            "deadline": "2026-06-08",
+            "delivered": "2026-06-08"
+          },
+          "summary": "Site production-ready livré en 3 passes expertes (SEO, accessibilité, mobile). Reste Formspree ID et og-image à fournir par le client.",
+          "livrables": [
+            { "title": "Site HTML complet", "url": "livrables/clients/100P/site-100p/index.html", "type": "site" },
+            { "title": "Logo système v1.0", "url": "livrables/clients/100P/logo-100p-system.html", "type": "design" }
+          ],
+          "agents": ["web-developer-lumi", "mobile-web-developer"]
+        },
+        {
+          "id": "PRJ-2026-002",
+          "title": "Stratégie Digitale 100P",
+          "status": "en_cours",
+          "progress": 40,
+          "priority": "normale",
+          "devis": {
+            "ref": null,
+            "one_shot": null,
+            "abonnement": 490,
+            "statut": "signé",
+            "url": null
+          },
+          "dates": {
+            "start": "2026-06-08",
+            "deadline": "2026-07-08",
+            "delivered": null
+          },
+          "summary": "Calendrier éditorial Instagram juillet 2026 généré (13 posts). SEO local et GMB à démarrer.",
+          "livrables": [],
+          "agents": ["instagram-content-strategist", "lumi-seo", "lumi-google-my-business"]
+        },
+        {
+          "id": "PRJ-2026-003",
+          "title": "Outil IA Rôtisserie & Volaillerie",
+          "status": "demarrage",
+          "progress": 10,
+          "priority": "basse",
+          "devis": {
+            "ref": null,
+            "one_shot": 1500,
+            "abonnement": null,
+            "statut": "estimé",
+            "url": null
+          },
+          "dates": {
+            "start": null,
+            "deadline": "2026-07-31",
+            "delivered": null
+          },
+          "summary": "Piste identifiée : outil IA gestion stocks, commandes et recettes pour le marché couvert de Vichy. Devis à construire.",
+          "livrables": [],
+          "agents": ["lumi-devis"]
+        }
+      ]
+    },
+    {
+      "id": "CLT-002",
+      "name": "BeLoc",
+      "full_name": "BeLoc — Location Véhicules Premium",
+      "sector": "Location véhicules luxe & premium",
+      "accent": "#C9A96E",
+      "contact": "BeLoc",
+      "missions": [
+        {
+          "id": "PRJ-2026-004",
+          "title": "Site Internet Marchand + Stratégie Digitale",
+          "status": "en_attente_client",
+          "progress": 90,
+          "priority": "haute",
+          "devis": {
+            "ref": "DEV-2026-BeLoc-01",
+            "one_shot": 4500,
+            "abonnement": 890,
+            "statut": "signé",
+            "url": "livrables/clients/BeLoc/dossier-livraison-final/00-index-dossier.html"
+          },
+          "dates": {
+            "start": "2026-06-04",
+            "deadline": "2026-06-15",
+            "delivered": null
+          },
+          "summary": "Dossier de livraison complet envoyé (devis 4 500 € + CDC 10 sections). En attente retours recette. 12 infos requises de BeLoc avant mise en ligne.",
+          "livrables": [
+            { "title": "Dossier de livraison", "url": "livrables/clients/BeLoc/dossier-livraison-final/00-index-dossier.html", "type": "dossier" },
+            { "title": "Site BeLoc (local)", "url": "livrables/sites-web/beloc-site-repo/index.html", "type": "site" },
+            { "title": "Logo système v1.0", "url": "livrables/clients/BeLoc/logo-beloc-system.html", "type": "design" },
+            { "title": "Devis DEV-2026-BeLoc-01", "url": "livrables/clients/BeLoc/devis-beloc-2026-06-08.html", "type": "devis" }
+          ],
+          "agents": ["web-developer-lumi", "mobile-web-developer", "lumi-devis"]
+        }
+      ]
+    }
+  ]
+}
