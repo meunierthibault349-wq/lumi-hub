@@ -118,43 +118,16 @@ export default function OrchestrerPage() {
         });
       }
 
-      // Auto-génération d'image si IMAGE_PROMPT détecté
+      // Auto-génération d'image côté client — URL Pollinations directement dans <img>
       const imagePrompt = extractImagePrompt(full);
       if (imagePrompt) {
+        const seed = Math.floor(Math.random() * 1000000);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1024&height=1024&model=flux&seed=${seed}&nologo=true`;
         setMessages(prev => {
           const upd = [...prev];
-          upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: true };
+          upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl, imageLoading: true };
           return upd;
         });
-        try {
-          const imgRes = await fetch('/api/image-gen', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: imagePrompt }),
-          });
-          if (!imgRes.ok) {
-            const errData = await imgRes.json().catch(() => ({ error: `HTTP ${imgRes.status}` }));
-            setMessages(prev => {
-              const upd = [...prev];
-              upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false, imageError: errData.error };
-              return upd;
-            });
-          } else {
-            const blob = await imgRes.blob();
-            const objectUrl = URL.createObjectURL(blob);
-            setMessages(prev => {
-              const upd = [...prev];
-              upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl: objectUrl, imageLoading: false };
-              return upd;
-            });
-          }
-        } catch (err) {
-          setMessages(prev => {
-            const upd = [...prev];
-            upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false, imageError: String(err) };
-            return upd;
-          });
-        }
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== 'AbortError') {
@@ -231,11 +204,15 @@ export default function OrchestrerPage() {
                     <img
                       src={msg.imageUrl}
                       alt="Visuel généré"
-                      style={{ width: '100%', maxWidth: 400, borderRadius: 10, display: 'block' }}
+                      style={{ width: '100%', maxWidth: 400, borderRadius: 10, display: msg.imageLoading ? 'none' : 'block' }}
+                      onLoad={() => setMessages(prev => prev.map((m, j) => j === i ? { ...m, imageLoading: false } : m))}
+                      onError={() => setMessages(prev => prev.map((m, j) => j === i ? { ...m, imageLoading: false, imageError: 'Génération échouée — réessayez dans quelques secondes' } : m))}
                     />
-                    <a href={msg.imageUrl} download target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, padding: '4px 12px', borderRadius: 6, background: 'rgba(0,210,200,.1)', border: '1px solid rgba(0,210,200,.25)', color: 'var(--teal)', fontSize: 11, fontWeight: 600, textDecoration: 'none' }}>
-                      ⬇ Télécharger
-                    </a>
+                    {!msg.imageLoading && !msg.imageError && (
+                      <a href={msg.imageUrl} download target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, padding: '4px 12px', borderRadius: 6, background: 'rgba(0,210,200,.1)', border: '1px solid rgba(0,210,200,.25)', color: 'var(--teal)', fontSize: 11, fontWeight: 600, textDecoration: 'none' }}>
+                        ⬇ Télécharger
+                      </a>
+                    )}
                   </div>
                 )}
               </div>
