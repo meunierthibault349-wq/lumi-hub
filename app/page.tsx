@@ -1,21 +1,27 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, TaskRow } from '@/lib/supabase';
-import { MISSIONS, Mission, MILESTONES, MRR_TOTAL, MRR_OBJECTIF } from '@/lib/data';
+import { supabase, TaskRow, ProjectRow, MilestoneRow } from '@/lib/supabase';
 import MissionSlideOver from '@/components/MissionSlideOver';
+
+const MRR_OBJECTIF = 5000;
 
 export default function Dashboard() {
   const router = useRouter();
   const [tasks, setTasks] = useState<TaskRow[]>([]);
-  const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
+  const [mrrTotal, setMrrTotal] = useState(0);
+  const [selectedProject, setSelectedProject] = useState<ProjectRow | null>(null);
 
-  useEffect(() => { loadTasks(); }, []);
-
-  async function loadTasks() {
-    const { data } = await supabase.from('tasks').select('*').order('priority', { ascending: false });
-    if (data) setTasks(data);
-  }
+  useEffect(() => {
+    supabase.from('tasks').select('*').order('priority', { ascending: false }).then(({ data }) => { if (data) setTasks(data); });
+    supabase.from('projects').select('*').then(({ data }) => { if (data) setProjects(data); });
+    supabase.from('milestones').select('*').order('date').then(({ data }) => { if (data) setMilestones(data); });
+    supabase.from('clients').select('mrr').then(({ data }) => {
+      if (data) setMrrTotal(data.reduce((s: number, c: { mrr: number }) => s + c.mrr, 0));
+    });
+  }, []);
 
   async function toggleTask(id: string) {
     const task = tasks.find(t => t.id === id);
@@ -31,32 +37,26 @@ export default function Dashboard() {
   const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
   const dateStr = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
-  const activeMissions = MISSIONS.filter(m => m.status !== 'livré');
+  const activeMissions = projects.filter(p => p.status !== 'livré');
   const urgent = tasks.filter(t => !t.done && t.priority >= 7).length;
   const topTasks = tasks.filter(t => !t.done).slice(0, 5);
+  const mrrPct = mrrTotal > 0 ? Math.min(100, (mrrTotal / MRR_OBJECTIF) * 100).toFixed(1) : '0';
 
   function daysUntil(dateStr: string): number {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const target = new Date(dateStr);
-    return Math.ceil((target.getTime() - today.getTime()) / 86400000);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return Math.ceil((new Date(dateStr).getTime() - today.getTime()) / 86400000);
   }
-
-  function daysLabel(d: number): string {
+  function daysLabel(d: number) {
     if (d < 0) return `${Math.abs(d)}j de retard`;
     if (d === 0) return "Aujourd'hui";
     return `${d} jour${d > 1 ? 's' : ''}`;
   }
-
   function daysCls(d: number): 'days-urgent' | 'days-warn' | 'days-ok' {
-    if (d <= 7) return 'days-urgent';
-    if (d <= 14) return 'days-warn';
-    return 'days-ok';
+    return d <= 7 ? 'days-urgent' : d <= 14 ? 'days-warn' : 'days-ok';
   }
 
-  const milestonesWithDays = MILESTONES.map(m => ({ ...m, d: daysUntil(m.date) }));
+  const milestonesWithDays = milestones.map(m => ({ ...m, d: daysUntil(m.date) }));
   const nextMilestone = [...milestonesWithDays].sort((a, b) => a.d - b.d)[0];
-  const mrrPct = Math.min(100, (MRR_TOTAL / MRR_OBJECTIF) * 100).toFixed(1);
 
   return (
     <>
@@ -72,14 +72,14 @@ export default function Dashboard() {
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
           <div className="metric-card">
             <div className="metric-label">MRR actuel</div>
-            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{MRR_TOTAL.toLocaleString('fr-FR')} €</div>
+            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{mrrTotal.toLocaleString('fr-FR')} €</div>
             <div className="metric-sub">Objectif : {MRR_OBJECTIF.toLocaleString('fr-FR')} €/mois · {mrrPct}%</div>
             <div className="progress-bar" style={{ marginTop: 10 }}><div className="progress-fill" style={{ width: `${mrrPct}%` }} /></div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Projets actifs</div>
             <div className="metric-val">{activeMissions.length}</div>
-            <div className="metric-sub">sur {MISSIONS.length} missions totales</div>
+            <div className="metric-sub">sur {projects.length} missions totales</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Tâches urgentes</div>
@@ -88,10 +88,14 @@ export default function Dashboard() {
           </div>
           <div className="metric-card">
             <div className="metric-label">Prochain jalon</div>
-            <div className="metric-val" style={{ fontSize: 18, color: nextMilestone.d <= 7 ? '#f87171' : nextMilestone.d <= 14 ? 'var(--amber)' : 'var(--mint)' }}>
-              {daysLabel(nextMilestone.d)}
-            </div>
-            <div className="metric-sub">{nextMilestone.title.split(' — ')[0]} · {new Date(nextMilestone.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
+            {nextMilestone ? (
+              <>
+                <div className="metric-val" style={{ fontSize: 18, color: nextMilestone.d <= 7 ? '#f87171' : nextMilestone.d <= 14 ? 'var(--amber)' : 'var(--mint)' }}>
+                  {daysLabel(nextMilestone.d)}
+                </div>
+                <div className="metric-sub">{nextMilestone.title.split(' — ')[0]} · {new Date(nextMilestone.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
+              </>
+            ) : <div className="metric-val">—</div>}
           </div>
         </div>
 
@@ -103,11 +107,8 @@ export default function Dashboard() {
             </div>
             <div>
               {topTasks.map(t => (
-                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }}
-                  onClick={() => toggleTask(t.id)}>
-                  <div className={`task-check${t.done ? ' done' : ''}`}>
-                    {t.done && <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>✓</span>}
-                  </div>
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }} onClick={() => toggleTask(t.id)}>
+                  <div className={`task-check${t.done ? ' done' : ''}`}>{t.done && <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>✓</span>}</div>
                   <div style={{ flex: 1, fontSize: 13, color: t.done ? 'var(--gray-dim)' : 'var(--white)', textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</div>
                   <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--night-3)', color: 'var(--gray)', whiteSpace: 'nowrap' }}>{t.project}</span>
                   <span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span>
@@ -128,10 +129,9 @@ export default function Dashboard() {
             </div>
             <div>
               {activeMissions.map(m => (
-                <div key={m.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }}
-                  onClick={() => setSelectedMission(m)}>
+                <div key={m.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }} onClick={() => setSelectedProject(m)}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: m.clientColor, flexShrink: 0 }} />
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: m.client_color, flexShrink: 0 }} />
                     <div style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>{m.title}</div>
                     <span className={`badge badge-${m.status}`}>{m.status.replace(/_/g, ' ')}</span>
                   </div>
@@ -149,6 +149,9 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+              {activeMissions.length === 0 && projects.length === 0 && (
+                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+              )}
             </div>
           </div>
         </div>
@@ -163,19 +166,16 @@ export default function Dashboard() {
                 const col = cls === 'days-urgent' ? '#f87171' : cls === 'days-warn' ? 'var(--amber)' : 'var(--mint)';
                 return (
                   <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'flex-start' }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: j.clientColor, marginTop: 4, flexShrink: 0 }} />
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: j.client_color, marginTop: 4, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13 }}>{j.title}</div>
-                      <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 2 }}>
-                        {new Date(j.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 2 }}>{new Date(j.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap', alignSelf: 'center', background: bg, color: col }}>
-                      {daysLabel(j.d)}
-                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap', alignSelf: 'center', background: bg, color: col }}>{daysLabel(j.d)}</span>
                   </div>
                 );
               })}
+              {milestones.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>}
             </div>
           </div>
 
@@ -198,7 +198,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {selectedMission && <MissionSlideOver mission={selectedMission} onClose={() => setSelectedMission(null)} />}
+      {selectedProject && <MissionSlideOver project={selectedProject} onClose={() => setSelectedProject(null)} onSave={p => setProjects(prev => prev.map(x => x.id === p.id ? p : x))} />}
     </>
   );
 }

@@ -1,47 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase, ClientRow, InvoiceRow } from '@/lib/supabase';
 
-const MRR_ENCAISSE = 490;
-const MRR_A_FACTURER = 890;
-const MRR_TOTAL = MRR_ENCAISSE + MRR_A_FACTURER;
 const OBJECTIF = 5000;
-const GAP = OBJECTIF - MRR_TOTAL;
-
-const CLIENTS = [
-  {
-    id: 'C1', name: '100P Location', color: '#8B1E2F', mrr: 490,
-    pack: 'Pack Starter', status: 'encaisse' as const, contact: 'Jean Charles Taret',
-    prochaineFact: '1 juil. 2026',
-  },
-  {
-    id: 'C2', name: 'BeLoc', color: '#C9A96E', mrr: 890,
-    pack: 'Pack Visibilité', status: 'a_facturer' as const, contact: 'BeLoc',
-    prochaineFact: '10 juin 2026',
-  },
-];
-
-interface Invoice {
-  id: string; client: string; clientColor: string; desc: string;
-  amount: number; date: string; status: 'encaisse' | 'en_attente' | 'a_faire';
-}
-
-const INVOICES: Invoice[] = [
-  { id: 'F001', client: '100P Location', clientColor: '#8B1E2F', desc: 'Site Internet 100P Location', amount: 1400, date: 'juin 2026', status: 'encaisse' },
-  { id: 'F002', client: 'BeLoc', clientColor: '#C9A96E', desc: 'Site Internet Marchand BeLoc — Pack Dev', amount: 4500, date: 'juin 2026', status: 'en_attente' },
-  { id: 'F003', client: 'BeLoc', clientColor: '#C9A96E', desc: 'Pack Visibilité — juin 2026', amount: 890, date: 'juin 2026', status: 'a_faire' },
-  { id: 'F004', client: '100P Location', clientColor: '#8B1E2F', desc: 'Pack Starter — juin 2026', amount: 490, date: 'juin 2026', status: 'encaisse' },
-  { id: 'F005', client: 'TYT03 — Jean Charles Taret', clientColor: '#8B1E2F', desc: 'Outil IA Rôtisserie — devis à construire', amount: 1500, date: 'juil. 2026', status: 'a_faire' },
-];
-
-const PACKS_NEEDED: { name: string; price: number; count: number }[] = (() => {
-  const remaining = GAP;
-  if (remaining <= 0) return [];
-  return [
-    { name: 'Starter (490€)', price: 490, count: Math.ceil(remaining / 490) },
-    { name: 'Visibilité (890€)', price: 890, count: Math.ceil(remaining / 890) },
-    { name: 'Performance (1490€)', price: 1490, count: Math.ceil(remaining / 1490) },
-  ];
-})();
 
 const STATUS_LABEL: Record<string, string> = {
   encaisse: 'Encaissé', en_attente: 'En attente', a_faire: 'À envoyer',
@@ -51,11 +12,30 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function FinancesPage() {
+  const [clients, setClients] = useState<ClientRow[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [filter, setFilter] = useState<'all' | 'encaisse' | 'en_attente' | 'a_faire'>('all');
 
-  const filtered = filter === 'all' ? INVOICES : INVOICES.filter(f => f.status === filter);
-  const totalEncaisse = INVOICES.filter(f => f.status === 'encaisse').reduce((s, f) => s + f.amount, 0);
-  const totalEnAttente = INVOICES.filter(f => f.status === 'en_attente' || f.status === 'a_faire').reduce((s, f) => s + f.amount, 0);
+  useEffect(() => {
+    supabase.from('clients').select('*').order('created_at').then(({ data }) => { if (data) setClients(data); });
+    supabase.from('invoices').select('*').order('created_at').then(({ data }) => { if (data) setInvoices(data); });
+  }, []);
+
+  const mrrTotal = clients.reduce((s, c) => s + c.mrr, 0);
+  const mrrEncaisse = clients.filter(c => c.status === 'actif').reduce((s, c) => s + c.mrr, 0);
+  const mrrAFacturer = clients.filter(c => c.status !== 'actif').reduce((s, c) => s + c.mrr, 0);
+  const gap = Math.max(0, OBJECTIF - mrrTotal);
+  const mrrPct = mrrTotal > 0 ? Math.min(100, (mrrTotal / OBJECTIF) * 100) : 0;
+
+  const filtered = filter === 'all' ? invoices : invoices.filter(f => f.status === filter);
+  const totalEncaisse = invoices.filter(f => f.status === 'encaisse').reduce((s, f) => s + f.amount, 0);
+  const totalEnAttente = invoices.filter(f => f.status === 'en_attente' || f.status === 'a_faire').reduce((s, f) => s + f.amount, 0);
+
+  const packsNeeded = gap <= 0 ? [] : [
+    { name: 'Starter (490€)', price: 490, count: Math.ceil(gap / 490) },
+    { name: 'Visibilité (890€)', price: 890, count: Math.ceil(gap / 890) },
+    { name: 'Performance (1490€)', price: 1490, count: Math.ceil(gap / 1490) },
+  ];
 
   return (
     <>
@@ -70,7 +50,6 @@ export default function FinancesPage() {
 
       <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
 
-        {/* MRR Progress */}
         <div className="panel" style={{ marginBottom: 20, padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
             <div>
@@ -79,17 +58,17 @@ export default function FinancesPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                 <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 800, fontSize: 36, color: 'var(--teal-light)' }}>
-                  {MRR_TOTAL.toLocaleString('fr-FR')} €
+                  {clients.length === 0 ? '…' : `${mrrTotal.toLocaleString('fr-FR')} €`}
                 </span>
                 <span style={{ fontSize: 15, color: 'var(--gray)' }}>/ {OBJECTIF.toLocaleString('fr-FR')} €</span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 13, color: '#f87171', fontWeight: 600 }}>
-                Il manque {GAP.toLocaleString('fr-FR')} €/mois
+                Il manque {gap.toLocaleString('fr-FR')} €/mois
               </div>
               <div style={{ fontSize: 12, color: 'var(--gray)', marginTop: 2 }}>
-                {((MRR_TOTAL / OBJECTIF) * 100).toFixed(1)}% de l'objectif atteint
+                {mrrPct.toFixed(1)}% de l'objectif atteint
               </div>
             </div>
           </div>
@@ -98,7 +77,7 @@ export default function FinancesPage() {
             <div style={{
               height: '100%', borderRadius: 6,
               background: 'linear-gradient(90deg, var(--teal), var(--teal-light))',
-              width: `${Math.min((MRR_TOTAL / OBJECTIF) * 100, 100)}%`,
+              width: `${mrrPct}%`,
               transition: 'width .4s ease',
               position: 'relative',
             }}>
@@ -114,52 +93,53 @@ export default function FinancesPage() {
           <div style={{ display: 'flex', gap: 24, marginTop: 14, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--mint)' }} />
-              <span style={{ fontSize: 12, color: 'var(--gray)' }}>Encaissé : <strong style={{ color: 'var(--mint)' }}>{MRR_ENCAISSE} €</strong></span>
+              <span style={{ fontSize: 12, color: 'var(--gray)' }}>Encaissé : <strong style={{ color: 'var(--mint)' }}>{mrrEncaisse} €</strong></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--amber)' }} />
-              <span style={{ fontSize: 12, color: 'var(--gray)' }}>À facturer : <strong style={{ color: 'var(--amber)' }}>{MRR_A_FACTURER} €</strong></span>
+              <span style={{ fontSize: 12, color: 'var(--gray)' }}>À facturer : <strong style={{ color: 'var(--amber)' }}>{mrrAFacturer} €</strong></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171' }} />
-              <span style={{ fontSize: 12, color: 'var(--gray)' }}>Gap objectif : <strong style={{ color: '#f87171' }}>{GAP} €</strong></span>
+              <span style={{ fontSize: 12, color: 'var(--gray)' }}>Gap objectif : <strong style={{ color: '#f87171' }}>{gap} €</strong></span>
             </div>
           </div>
         </div>
 
-        {/* KPI Row */}
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 20 }}>
           <div className="metric-card">
             <div className="metric-label">MRR contractuel</div>
-            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{MRR_TOTAL} €</div>
-            <div className="metric-sub">2 clients signés</div>
+            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{clients.length === 0 ? '…' : `${mrrTotal} €`}</div>
+            <div className="metric-sub">{clients.length} client{clients.length > 1 ? 's' : ''} signé{clients.length > 1 ? 's' : ''}</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Factures encaissées</div>
-            <div className="metric-val" style={{ color: 'var(--mint)' }}>{totalEncaisse.toLocaleString('fr-FR')} €</div>
+            <div className="metric-val" style={{ color: 'var(--mint)' }}>{invoices.length === 0 ? '…' : `${totalEncaisse.toLocaleString('fr-FR')} €`}</div>
             <div className="metric-sub">one-shots + abonnements</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">En attente / À envoyer</div>
-            <div className="metric-val" style={{ color: 'var(--amber)' }}>{totalEnAttente.toLocaleString('fr-FR')} €</div>
+            <div className="metric-val" style={{ color: 'var(--amber)' }}>{invoices.length === 0 ? '…' : `${totalEnAttente.toLocaleString('fr-FR')} €`}</div>
             <div className="metric-sub">à encaisser ce mois</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">CA juin estimé</div>
-            <div className="metric-val">{(totalEncaisse + totalEnAttente).toLocaleString('fr-FR')} €</div>
+            <div className="metric-val">{invoices.length === 0 ? '…' : `${(totalEncaisse + totalEnAttente).toLocaleString('fr-FR')} €`}</div>
             <div className="metric-sub">si tout encaissé</div>
           </div>
         </div>
 
         <div className="r-g2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
 
-          {/* Clients actifs */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title">Revenus récurrents</div>
-              <span style={{ fontSize: 12, color: 'var(--teal-light)', fontWeight: 600 }}>{MRR_TOTAL} €/mois</span>
+              <span style={{ fontSize: 12, color: 'var(--teal-light)', fontWeight: 600 }}>{mrrTotal} €/mois</span>
             </div>
-            {CLIENTS.map(c => (
+            {clients.length === 0 && (
+              <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+            )}
+            {clients.map(c => (
               <div key={c.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: c.color, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
@@ -167,12 +147,12 @@ export default function FinancesPage() {
                   <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 2 }}>{c.pack}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: c.status === 'encaisse' ? 'var(--mint)' : 'var(--amber)' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: c.status === 'actif' ? 'var(--mint)' : 'var(--amber)' }}>
                     {c.mrr} €/mois
                   </div>
                   <div style={{ fontSize: 11, marginTop: 2 }}>
-                    <span style={{ padding: '1px 6px', borderRadius: 20, fontSize: 10, fontWeight: 600, background: c.status === 'encaisse' ? 'rgba(93,202,165,.15)' : 'rgba(239,159,39,.15)', color: c.status === 'encaisse' ? 'var(--mint)' : 'var(--amber)' }}>
-                      {c.status === 'encaisse' ? 'Encaissé' : 'À facturer'}
+                    <span style={{ padding: '1px 6px', borderRadius: 20, fontSize: 10, fontWeight: 600, background: c.status === 'actif' ? 'rgba(93,202,165,.15)' : 'rgba(239,159,39,.15)', color: c.status === 'actif' ? 'var(--mint)' : 'var(--amber)' }}>
+                      {c.status === 'actif' ? 'Encaissé' : 'À facturer'}
                     </span>
                   </div>
                 </div>
@@ -180,17 +160,16 @@ export default function FinancesPage() {
             ))}
           </div>
 
-          {/* Projection */}
           <div className="panel">
             <div className="panel-header">
               <div className="panel-title">Projection vers 5 000 €</div>
-              <span style={{ fontSize: 12, color: '#f87171', fontWeight: 600 }}>−{GAP} €</span>
+              <span style={{ fontSize: 12, color: '#f87171', fontWeight: 600 }}>−{gap} €</span>
             </div>
             <div style={{ padding: '12px 18px' }}>
               <div style={{ fontSize: 12, color: 'var(--gray)', marginBottom: 12 }}>
                 Pour atteindre l'objectif, il faut signer :
               </div>
-              {PACKS_NEEDED.map(p => (
+              {packsNeeded.map(p => (
                 <div key={p.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--night-3)', borderRadius: 8, marginBottom: 8 }}>
                   <div style={{ fontSize: 13 }}>{p.name}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -201,13 +180,12 @@ export default function FinancesPage() {
               ))}
               <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(13,148,136,.08)', borderRadius: 8, border: '1px solid rgba(13,148,136,.15)' }}>
                 <div style={{ fontSize: 12, color: 'var(--gray)', marginBottom: 4 }}>MRR restant à signer</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--teal-light)' }}>{GAP.toLocaleString('fr-FR')} €/mois</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--teal-light)' }}>{gap.toLocaleString('fr-FR')} €/mois</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Factures */}
         <div className="panel">
           <div className="panel-header">
             <div className="panel-title">Suivi des factures</div>
@@ -226,17 +204,21 @@ export default function FinancesPage() {
             <div>Description</div><div>Client</div><div>Montant</div><div>Statut</div>
           </div>
 
+          {invoices.length === 0 && (
+            <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+          )}
+
           {filtered.map(inv => (
             <div key={inv.id}
               style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{inv.desc}</div>
+                <div style={{ fontSize: 13, fontWeight: 500 }}>{inv.description}</div>
                 <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 2 }}>{inv.date} · {inv.id}</div>
               </div>
               <div className="r-tch" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: inv.clientColor, flexShrink: 0 }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: inv.client_color, flexShrink: 0 }} />
                 <span style={{ fontSize: 12, color: 'var(--gray)' }}>{inv.client.split(' ')[0]}</span>
               </div>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--white)' }}>

@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { MISSIONS } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { supabase, ClientRow, ProjectRow } from '@/lib/supabase';
 
 const SUGGESTED_AGENTS: Record<string, { e: string; n: string }[]> = {
   'CLT-001': [
@@ -15,70 +15,6 @@ const SUGGESTED_AGENTS: Record<string, { e: string; n: string }[]> = {
   ],
 };
 
-interface PendingItem { text: string; owner: 'lumi' | 'client'; }
-
-interface ClientDef {
-  id: string; name: string; color: string; sector: string;
-  pack: string; mrr: number; contact: string; email: string;
-  status: 'actif' | 'attente_client' | 'demarrage';
-  lastContact: string;
-  pending: PendingItem[];
-  notes: string[];
-  vehicles?: { model: string; year: number }[];
-}
-
-const CLIENTS: ClientDef[] = [
-  {
-    id: 'CLT-001', name: '100P Location', color: '#8B1E2F',
-    sector: 'Location voiture sans permis — national, 100% en ligne',
-    pack: 'Pack Starter', mrr: 490, contact: 'Jean Charles Taret',
-    email: 'taret.jean-charles@orange.fr',
-    status: 'actif', lastContact: '8 juin 2026',
-    pending: [
-      { text: 'Valider formellement le logo système v1.0', owner: 'client' },
-      { text: 'Push du site 100p-location sur repo GitHub privé', owner: 'lumi' },
-      { text: 'Remplacer FORM_ID_PLACEHOLDER (créer compte Formspree)', owner: 'lumi' },
-      { text: 'Créer og-100p.jpg (1200×630px)', owner: 'lumi' },
-      { text: 'Convertir PNG en WebP (4 images)', owner: 'lumi' },
-      { text: 'Construire proposition outils IA rôtisserie/volaillerie', owner: 'lumi' },
-    ],
-    notes: [
-      'Jean Charles gère 3 activités : 100P Location (en ligne) + Rôtisserie + Volaillerie (marché de Vichy).',
-      'Les outils IA pour les activités alimentaires sont un angle d\'upsell fort — Pack IA sur devis, min. 1 500 €.',
-      'Site production-ready (PWA, SEO, accessibilité WCAG AA, responsive iOS).',
-    ],
-  },
-  {
-    id: 'CLT-002', name: 'BeLoc', color: '#C9A96E',
-    sector: 'Location véhicules luxe & premium — Auvergne-Rhône-Alpes',
-    pack: 'Pack Visibilité', mrr: 890, contact: 'À compléter',
-    email: 'À compléter',
-    status: 'attente_client', lastContact: '8 juin 2026',
-    pending: [
-      { text: 'Récupérer vraies photos RS3 et Golf 8R', owner: 'client' },
-      { text: 'Récupérer infos légales (SIRET, mentions, CGV)', owner: 'client' },
-      { text: 'Récupérer URL définitive du site', owner: 'client' },
-      { text: 'Récupérer numéro WhatsApp réel', owner: 'client' },
-      { text: 'Récupérer compte Formspree', owner: 'client' },
-      { text: 'Récupérer GA4 Measurement ID', owner: 'client' },
-      { text: 'Récupérer Meta Pixel ID', owner: 'client' },
-      { text: 'Valider choix logo parmi les 6 concepts', owner: 'client' },
-      { text: 'Envoyer la facture de juin (Pack Visibilité 890 €)', owner: 'lumi' },
-      { text: 'Remplacer [NOM GÉRANT] dans le devis et le CDC', owner: 'lumi' },
-    ],
-    notes: [
-      'Agence récente en plein développement. Cible particuliers et pros en AuRA cherchant un véhicule premium.',
-      'Upsell naturel : Pack Performance (1 490 €/mois) avec campagnes Meta Ads et Google Ads.',
-      'Devis DEV-2026-BeLoc-01 (4 500 € HT) + Pack Visibilité 890 €/mois signé.',
-    ],
-    vehicles: [
-      { model: 'Audi RS3', year: 2025 }, { model: 'Golf 8R', year: 2025 },
-      { model: 'Golf 8', year: 2025 }, { model: 'Clio 6 Alpine', year: 2026 },
-      { model: 'Clio 5', year: 2025 },
-    ],
-  },
-];
-
 const STATUS_LABEL: Record<string, string> = {
   actif: 'Actif', attente_client: 'Attente client', demarrage: 'Démarrage',
 };
@@ -90,25 +26,27 @@ const STATUS_BG: Record<string, string> = {
 };
 
 export default function ClientsPage() {
-  const [selected, setSelected] = useState<ClientDef | null>(null);
+  const [clients, setClients] = useState<ClientRow[]>([]);
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [selected, setSelected] = useState<ClientRow | null>(null);
   const [tab, setTab] = useState<'missions' | 'pending' | 'notes'>('missions');
-  const [agentPicker, setAgentPicker] = useState(false);
 
-  function openClient(c: ClientDef) { setSelected(c); setTab('missions'); setAgentPicker(false); }
+  useEffect(() => {
+    supabase.from('clients').select('*').order('created_at').then(({ data }) => { if (data) setClients(data); });
+    supabase.from('projects').select('*').order('created_at').then(({ data }) => { if (data) setProjects(data); });
+  }, []);
 
-  function launchAgent(clientName: string) {
-    window.location.href = `/agents?client=${encodeURIComponent(clientName)}`;
-  }
+  function openClient(c: ClientRow) { setSelected(c); setTab('missions'); }
 
-  const totalMrr = CLIENTS.reduce((s, c) => s + c.mrr, 0);
-  const totalPending = CLIENTS.reduce((s, c) => s + c.pending.length, 0);
+  const totalMrr = clients.reduce((s, c) => s + c.mrr, 0);
+  const totalPending = clients.reduce((s, c) => s + c.pending.length, 0);
 
   return (
     <>
       <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Clients</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>
-          {CLIENTS.length} actifs · {totalMrr} €/mois
+          {clients.length} actifs · {totalMrr} €/mois
         </span>
         <div style={{ marginLeft: 'auto' }} />
         <button className="btn primary r-hm">+ Nouveau client</button>
@@ -116,21 +54,20 @@ export default function ClientsPage() {
 
       <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
 
-        {/* KPIs */}
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
           <div className="metric-card">
             <div className="metric-label">Clients actifs</div>
-            <div className="metric-val" style={{ color: 'var(--mint)' }}>{CLIENTS.length}</div>
+            <div className="metric-val" style={{ color: 'var(--mint)' }}>{clients.length === 0 ? '…' : clients.length}</div>
             <div className="metric-sub">tous signés</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">MRR total</div>
-            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{totalMrr} €</div>
+            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{clients.length === 0 ? '…' : `${totalMrr} €`}</div>
             <div className="metric-sub">abonnements récurrents</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Actions en attente</div>
-            <div className="metric-val" style={{ color: 'var(--amber)' }}>{totalPending}</div>
+            <div className="metric-val" style={{ color: 'var(--amber)' }}>{clients.length === 0 ? '…' : totalPending}</div>
             <div className="metric-sub">sur tous les clients</div>
           </div>
           <div className="metric-card">
@@ -140,11 +77,14 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        {/* Client cards */}
+        {clients.length === 0 && (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+        )}
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {CLIENTS.map(c => {
-            const missions = MISSIONS.filter(m => m.client.includes(c.name.split(' ')[0]));
-            const activeMissions = missions.filter(m => m.status !== 'livré');
+          {clients.map(c => {
+            const clientProjects = projects.filter(p => p.client_id === c.id);
+            const activeProjects = clientProjects.filter(p => p.status !== 'livré');
             const pendingLumi = c.pending.filter(p => p.owner === 'lumi').length;
             const pendingClient = c.pending.filter(p => p.owner === 'client').length;
 
@@ -154,7 +94,6 @@ export default function ClientsPage() {
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,.12)')}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,.06)')}>
 
-                {/* Header */}
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 10, background: c.color + '22', border: `1px solid ${c.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <div style={{ width: 14, height: 14, borderRadius: '50%', background: c.color }} />
@@ -171,7 +110,6 @@ export default function ClientsPage() {
                   </div>
                 </div>
 
-                {/* Stats row */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', padding: '12px 20px', gap: 12 }}>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Pack</div>
@@ -179,7 +117,7 @@ export default function ClientsPage() {
                   </div>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Missions actives</div>
-                    <div style={{ fontSize: 12, fontWeight: 600 }}>{activeMissions.length} / {missions.length}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600 }}>{activeProjects.length} / {clientProjects.length}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Contact</div>
@@ -187,11 +125,10 @@ export default function ClientsPage() {
                   </div>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Dernier contact</div>
-                    <div style={{ fontSize: 12, fontWeight: 600 }}>{c.lastContact}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600 }}>{c.last_contact}</div>
                   </div>
                 </div>
 
-                {/* Pending alerts */}
                 {(pendingLumi > 0 || pendingClient > 0) && (
                   <div style={{ padding: '8px 20px 12px', display: 'flex', gap: 8 }}>
                     {pendingLumi > 0 && (
@@ -212,12 +149,10 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* Slide-over */}
       {selected && (
         <>
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100 }} onClick={() => setSelected(null)} />
           <div className="slide-over open" style={{ width: 480, zIndex: 200 }}>
-            {/* Header */}
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ width: 40, height: 40, borderRadius: 10, background: selected.color + '22', border: `1px solid ${selected.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: selected.color }} />
@@ -229,7 +164,6 @@ export default function ClientsPage() {
               <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setSelected(null)}>×</button>
             </div>
 
-            {/* Contact bar */}
             <div style={{ padding: '10px 24px', background: 'var(--night-3)', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', gap: 20 }}>
               <div>
                 <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginBottom: 2 }}>CONTACT</div>
@@ -247,7 +181,6 @@ export default function ClientsPage() {
               </div>
             </div>
 
-            {/* Tabs */}
             <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,.06)', padding: '0 24px' }}>
               {(['missions', 'pending', 'notes'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
@@ -257,29 +190,27 @@ export default function ClientsPage() {
               ))}
             </div>
 
-            {/* Tab content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-
               {tab === 'missions' && (() => {
-                const clientMissions = MISSIONS.filter(m => m.client.includes(selected.name.split(' ')[0]));
-                if (clientMissions.length === 0) return <div style={{ color: 'var(--gray-dim)', fontSize: 13 }}>Aucune mission.</div>;
+                const clientProjects = projects.filter(p => p.client_id === selected.id);
+                if (clientProjects.length === 0) return <div style={{ color: 'var(--gray-dim)', fontSize: 13 }}>Aucune mission.</div>;
                 return (
                   <>
-                    {clientMissions.map(m => (
-                      <div key={m.id} style={{ background: 'var(--night-3)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,.05)' }}>
+                    {clientProjects.map(p => (
+                      <div key={p.id} style={{ background: 'var(--night-3)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600 }}>{m.title}</div>
-                          <span className={`badge badge-${m.status}`} style={{ flexShrink: 0, fontSize: 11 }}>{m.status.replace(/_/g, ' ')}</span>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{p.title}</div>
+                          <span className={`badge badge-${p.status}`} style={{ flexShrink: 0, fontSize: 11 }}>{p.status.replace(/_/g, ' ')}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                           <div className="progress-bar" style={{ flex: 1 }}>
-                            <div className={`progress-fill${m.status === 'en_attente_client' ? ' amber' : ''}`} style={{ width: `${m.progress}%` }} />
+                            <div className={`progress-fill${p.status === 'en_attente_client' ? ' amber' : ''}`} style={{ width: `${p.progress}%` }} />
                           </div>
-                          <span style={{ fontSize: 12, color: 'var(--gray)', whiteSpace: 'nowrap' }}>{m.progress}%</span>
+                          <span style={{ fontSize: 12, color: 'var(--gray)', whiteSpace: 'nowrap' }}>{p.progress}%</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--gray-dim)' }}>
-                          <span>{m.ref}</span>
-                          <span>{m.devis} · {m.deadline}</span>
+                          <span>{p.ref}</span>
+                          <span>{p.devis} · {p.deadline}</span>
                         </div>
                       </div>
                     ))}
@@ -332,11 +263,10 @@ export default function ClientsPage() {
               )}
             </div>
 
-            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 10, position: 'relative', zIndex: 200 }}>
-              <button className="btn" style={{ flex: 1 }} onClick={e => { e.stopPropagation(); setSelected(null); }}>Fermer</button>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 10 }}>
+              <button className="btn" style={{ flex: 1 }} onClick={() => setSelected(null)}>Fermer</button>
               <a
                 href={`/agents?client=${encodeURIComponent(selected.name)}`}
-                onClick={e => e.stopPropagation()}
                 className="btn primary"
                 style={{ flex: 1, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 ⚡ Lancer un agent
