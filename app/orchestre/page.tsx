@@ -22,6 +22,14 @@ function cleanText(text: string): string {
   return text.replace(/\[MODE:[^\]]+\]/g, '').replace(/\[LIVRABLE:[^\]]+\]/g, '').trim();
 }
 
+function isVisualBrief(text: string): boolean {
+  return text.includes('🎨 BRIEF VISUEL') || (text.includes('📐 FORMAT') && text.includes('🎨 PALETTE'));
+}
+
+function openCanva() {
+  window.open('https://www.canva.com/search/templates?q=instagram+post+social+media', '_blank');
+}
+
 export default function OrchestrerPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([{ role: 'agent', text: WELCOME }]);
   const [input, setInput] = useState('');
@@ -168,12 +176,22 @@ export default function OrchestrerPage() {
                 ) : '')}
               </div>
               {livrable && !streaming && (
-                <button
-                  onClick={() => handleSave(msg.text, activeMode)}
-                  style={{ padding: '5px 12px', borderRadius: 6, background: saved ? 'rgba(52,211,153,.12)' : 'rgba(0,210,200,.1)', border: `1px solid ${saved ? 'rgba(52,211,153,.3)' : 'rgba(0,210,200,.25)'}`, color: saved ? '#34d399' : 'var(--teal)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
-                >
-                  {saved ? '✓ Sauvegardé dans Livrables' : `💾 Sauvegarder · ${livrable.type}`}
-                </button>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => handleSave(msg.text, activeMode)}
+                    style={{ padding: '5px 12px', borderRadius: 6, background: saved ? 'rgba(52,211,153,.12)' : 'rgba(0,210,200,.1)', border: `1px solid ${saved ? 'rgba(52,211,153,.3)' : 'rgba(0,210,200,.25)'}`, color: saved ? '#34d399' : 'var(--teal)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
+                  >
+                    {saved ? '✓ Sauvegardé dans Livrables' : `💾 Sauvegarder · ${livrable.type}`}
+                  </button>
+                  {isVisualBrief(msg.text) && (
+                    <button
+                      onClick={openCanva}
+                      style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(124,77,255,.12)', border: '1px solid rgba(124,77,255,.3)', color: '#a78bfa', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      🎨 Ouvrir Canva →
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           );
