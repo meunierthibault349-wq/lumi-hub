@@ -132,17 +132,19 @@ export default function OrchestrerPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt: imagePrompt }),
           });
-          const imgData = await imgRes.json();
-          if (imgData.error) {
+          if (!imgRes.ok) {
+            const errData = await imgRes.json().catch(() => ({ error: `HTTP ${imgRes.status}` }));
             setMessages(prev => {
               const upd = [...prev];
-              upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false, imageError: imgData.error };
+              upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false, imageError: errData.error };
               return upd;
             });
           } else {
+            const blob = await imgRes.blob();
+            const objectUrl = URL.createObjectURL(blob);
             setMessages(prev => {
               const upd = [...prev];
-              upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl: imgData.url, imageLoading: false };
+              upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl: objectUrl, imageLoading: false };
               return upd;
             });
           }

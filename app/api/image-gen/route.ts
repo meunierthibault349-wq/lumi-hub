@@ -13,33 +13,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'HF_API_KEY manquante' }, { status: 503 });
   }
 
-  const res = await fetch(
-    'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.HF_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inputs: prompt }),
-    }
-  );
+  let res: Response;
+  try {
+    res = await fetch(
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.HF_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ inputs: prompt }),
+      }
+    );
+  } catch (err) {
+    return NextResponse.json({ error: `Fetch failed: ${err}` }, { status: 500 });
+  }
 
   if (!res.ok) {
     const errText = await res.text();
-    console.error('[image-gen] HF error:', res.status, errText);
     return NextResponse.json({ error: `HF ${res.status}: ${errText}` }, { status: 500 });
   }
 
   const contentType = res.headers.get('content-type') ?? '';
   if (!contentType.includes('image')) {
     const body = await res.text();
-    console.error('[image-gen] HF non-image response:', body);
-    return NextResponse.json({ error: `Réponse inattendue: ${body}` }, { status: 500 });
+    return NextResponse.json({ error: `HF non-image: ${body.slice(0, 300)}` }, { status: 500 });
   }
 
-  const buffer = await res.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString('base64');
-
-  return NextResponse.json({ url: `data:${contentType};base64,${base64}` });
+  // Retourne l'image en binaire directement — pas de base64
+  const imageBuffer = await res.arrayBuffer();
+  return new Response(imageBuffer, {
+    headers: { 'Content-Type': contentType },
+  });
 }
