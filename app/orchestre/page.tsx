@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 
-interface ChatMessage { role: 'agent' | 'user'; text: string; imageUrl?: string; imageLoading?: boolean; imageError?: string; }
+interface ChatMessage { role: 'agent' | 'user'; text: string; imageUrl?: string; imageLoading?: boolean; imageError?: boolean; imagePrompt?: string; }
 
 const WELCOME = `Bonjour Thibault. Je suis ton Chef Adjoint — j'ai chargé tes clients, projets et tâches en cours.
 
@@ -125,7 +125,7 @@ export default function OrchestrerPage() {
         const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=1024&height=1024&model=flux&seed=${seed}&nologo=true`;
         setMessages(prev => {
           const upd = [...prev];
-          upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl, imageLoading: true };
+          upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl, imageLoading: true, imagePrompt };
           return upd;
         });
       }
@@ -194,9 +194,16 @@ export default function OrchestrerPage() {
                     Génération de l&apos;image en cours (20-40s)...
                   </div>
                 )}
-                {isAgent && msg.imageError && (
-                  <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,80,80,.08)', border: '1px solid rgba(255,80,80,.2)', fontSize: 11, color: '#ff8080' }}>
-                    ⚠ Erreur image : {msg.imageError}
+                {isAgent && msg.imageError && msg.imagePrompt && (
+                  <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,80,80,.08)', border: '1px solid rgba(255,80,80,.2)', fontSize: 11, color: '#ff8080', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span>⚠ Génération échouée (serveur saturé)</span>
+                    <button onClick={() => {
+                      const seed = Math.floor(Math.random() * 1000000);
+                      const newUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(msg.imagePrompt!)}?width=1024&height=1024&model=flux&seed=${seed}&nologo=true`;
+                      setMessages(prev => prev.map((m, j) => j === i ? { ...m, imageUrl: newUrl, imageLoading: true, imageError: false } : m));
+                    }} style={{ padding: '3px 10px', borderRadius: 5, background: 'rgba(255,80,80,.15)', border: '1px solid rgba(255,80,80,.3)', color: '#ff8080', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      🔄 Réessayer
+                    </button>
                   </div>
                 )}
                 {isAgent && msg.imageUrl && (
@@ -206,7 +213,7 @@ export default function OrchestrerPage() {
                       alt="Visuel généré"
                       style={{ width: '100%', maxWidth: 400, borderRadius: 10, display: msg.imageLoading ? 'none' : 'block' }}
                       onLoad={() => setMessages(prev => prev.map((m, j) => j === i ? { ...m, imageLoading: false } : m))}
-                      onError={() => setMessages(prev => prev.map((m, j) => j === i ? { ...m, imageLoading: false, imageError: 'Génération échouée — réessayez dans quelques secondes' } : m))}
+                      onError={() => setMessages(prev => prev.map((m, j) => j === i ? { ...m, imageLoading: false, imageError: true } : m))}
                     />
                     {!msg.imageLoading && !msg.imageError && (
                       <a href={msg.imageUrl} download target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, padding: '4px 12px', borderRadius: 6, background: 'rgba(0,210,200,.1)', border: '1px solid rgba(0,210,200,.25)', color: 'var(--teal)', fontSize: 11, fontWeight: 600, textDecoration: 'none' }}>
