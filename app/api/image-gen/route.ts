@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   const res = await fetch(
-    'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+    'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
     {
       method: 'POST',
       headers: {
@@ -27,12 +27,19 @@ export async function POST(req: NextRequest) {
 
   if (!res.ok) {
     const errText = await res.text();
-    return NextResponse.json({ error: errText }, { status: 500 });
+    console.error('[image-gen] HF error:', res.status, errText);
+    return NextResponse.json({ error: `HF ${res.status}: ${errText}` }, { status: 500 });
+  }
+
+  const contentType = res.headers.get('content-type') ?? '';
+  if (!contentType.includes('image')) {
+    const body = await res.text();
+    console.error('[image-gen] HF non-image response:', body);
+    return NextResponse.json({ error: `Réponse inattendue: ${body}` }, { status: 500 });
   }
 
   const buffer = await res.arrayBuffer();
   const base64 = Buffer.from(buffer).toString('base64');
-  const contentType = res.headers.get('content-type') ?? 'image/jpeg';
 
   return NextResponse.json({ url: `data:${contentType};base64,${base64}` });
 }

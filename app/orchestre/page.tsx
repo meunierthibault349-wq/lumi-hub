@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 
-interface ChatMessage { role: 'agent' | 'user'; text: string; imageUrl?: string; imageLoading?: boolean; }
+interface ChatMessage { role: 'agent' | 'user'; text: string; imageUrl?: string; imageLoading?: boolean; imageError?: string; }
 
 const WELCOME = `Bonjour Thibault. Je suis ton Chef Adjoint — j'ai chargé tes clients, projets et tâches en cours.
 
@@ -130,18 +130,26 @@ export default function OrchestrerPage() {
           const imgRes = await fetch('/api/image-gen', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: imagePrompt, size: 'square_hd' }),
+            body: JSON.stringify({ prompt: imagePrompt }),
           });
           const imgData = await imgRes.json();
+          if (imgData.error) {
+            setMessages(prev => {
+              const upd = [...prev];
+              upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false, imageError: imgData.error };
+              return upd;
+            });
+          } else {
+            setMessages(prev => {
+              const upd = [...prev];
+              upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl: imgData.url, imageLoading: false };
+              return upd;
+            });
+          }
+        } catch (err) {
           setMessages(prev => {
             const upd = [...prev];
-            upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl: imgData.url, imageLoading: false };
-            return upd;
-          });
-        } catch {
-          setMessages(prev => {
-            const upd = [...prev];
-            upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false };
+            upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false, imageError: String(err) };
             return upd;
           });
         }
@@ -208,7 +216,12 @@ export default function OrchestrerPage() {
                 {isAgent && msg.imageLoading && (
                   <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.06)', fontSize: 12, color: 'var(--gray)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⏳</span>
-                    Génération de l&apos;image en cours...
+                    Génération de l&apos;image en cours (20-40s)...
+                  </div>
+                )}
+                {isAgent && msg.imageError && (
+                  <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,80,80,.08)', border: '1px solid rgba(255,80,80,.2)', fontSize: 11, color: '#ff8080' }}>
+                    ⚠ Erreur image : {msg.imageError}
                   </div>
                 )}
                 {isAgent && msg.imageUrl && (
@@ -232,9 +245,9 @@ export default function OrchestrerPage() {
                   >
                     {saved ? '✓ Sauvegardé dans Livrables' : `💾 Sauvegarder · ${livrable.type}`}
                   </button>
-                  {isVisualBrief(msg.text) && (
+                  {(msg.text.includes('🎨 BRIEF VISUEL') || extractImagePrompt(msg.text)) && (
                     <button
-                      onClick={openCanva}
+                      onClick={() => window.open('https://www.canva.com/search/templates?q=instagram+post+social+media', '_blank')}
                       style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(124,77,255,.12)', border: '1px solid rgba(124,77,255,.3)', color: '#a78bfa', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                       🎨 Ouvrir Canva →
