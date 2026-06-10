@@ -39,7 +39,7 @@ export default function ClientsPage() {
   function openClient(c: ClientRow) { setSelected(c); setTab('missions'); }
 
   const totalMrr = clients.reduce((s, c) => s + c.mrr, 0);
-  const totalPending = clients.reduce((s, c) => s + c.pending.length, 0);
+  const totalPending = clients.reduce((s, c) => s + (c.pending ?? []).length, 0);
 
   return (
     <>
@@ -85,8 +85,8 @@ export default function ClientsPage() {
           {clients.map(c => {
             const clientProjects = projects.filter(p => p.client_id === c.id);
             const activeProjects = clientProjects.filter(p => p.status !== 'livré');
-            const pendingLumi = c.pending.filter(p => p.owner === 'lumi').length;
-            const pendingClient = c.pending.filter(p => p.owner === 'client').length;
+            const pendingLumi = (c.pending ?? []).filter(p => p.owner === 'lumi').length;
+            const pendingClient = (c.pending ?? []).filter(p => p.owner === 'client').length;
 
             return (
               <div key={c.id} onClick={() => openClient(c)}
@@ -185,7 +185,7 @@ export default function ClientsPage() {
               {(['missions', 'pending', 'notes'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
                   style={{ padding: '12px 16px', fontSize: 13, fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: tab === t ? 'var(--teal-light)' : 'var(--gray)', borderBottom: tab === t ? '2px solid var(--teal)' : '2px solid transparent', transition: 'color .15s' }}>
-                  {t === 'missions' ? 'Missions' : t === 'pending' ? `En suspens (${selected.pending.length})` : 'Notes'}
+                  {t === 'missions' ? 'Missions' : t === 'pending' ? `En suspens (${(selected.pending ?? []).length})` : 'Notes'}
                 </button>
               ))}
             </div>
@@ -221,7 +221,7 @@ export default function ClientsPage() {
               {tab === 'pending' && (
                 <>
                   {(['lumi', 'client'] as const).map(owner => {
-                    const items = selected.pending.filter(p => p.owner === owner);
+                    const items = (selected.pending ?? []).filter(p => p.owner === owner);
                     if (items.length === 0) return null;
                     return (
                       <div key={owner}>
@@ -242,7 +242,7 @@ export default function ClientsPage() {
 
               {tab === 'notes' && (
                 <>
-                  {selected.notes.map((n, i) => (
+                  {(selected.notes ?? []).map((n, i) => (
                     <div key={i} style={{ fontSize: 13, color: 'var(--gray)', lineHeight: 1.6, background: 'var(--night-3)', borderRadius: 8, padding: '12px 14px', borderLeft: `3px solid ${selected.color}` }}>
                       {n}
                     </div>

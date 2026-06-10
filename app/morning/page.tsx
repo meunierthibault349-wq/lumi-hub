@@ -54,7 +54,7 @@ export default function MorningPage() {
   const mrrPct = mrrTotal > 0 ? Math.min(100, (mrrTotal / MRR_OBJECTIF) * 100).toFixed(1) : '0';
   const topTasks = tasks.filter(t => !t.done && t.priority >= 7).slice(0, 5);
   const urgentMilestones = milestones.map(m => ({ ...m, d: daysUntil(m.date) })).filter(m => m.d <= 14).sort((a, b) => a.d - b.d);
-  const totalPending = clients.reduce((s, c) => s + c.pending.length, 0);
+  const totalPending = clients.reduce((s, c) => s + (c.pending ?? []).length, 0);
 
   function pClass(p: number) { return p >= 8 ? 'p-high' : p >= 6 ? 'p-mid' : 'p-low'; }
 
@@ -180,8 +180,8 @@ export default function MorningPage() {
                 <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
               )}
               {clients.map(c => {
-                const pendingLumi = c.pending.filter(p => p.owner === 'lumi').length;
-                const pendingClient = c.pending.filter(p => p.owner === 'client').length;
+                const pendingLumi = (c.pending ?? []).filter(p => p.owner === 'lumi').length;
+                const pendingClient = (c.pending ?? []).filter(p => p.owner === 'client').length;
                 return (
                   <div key={c.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
