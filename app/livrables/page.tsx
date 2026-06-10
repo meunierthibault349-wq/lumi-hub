@@ -17,6 +17,7 @@ interface LivrableIA {
   client_color: string;
   content: string;
   agent_mode: string;
+  image_url?: string | null;
   status: 'brouillon' | 'validé' | 'livré';
   created_at: string;
 }
@@ -205,6 +206,13 @@ export default function LivrablesPage() {
 
                     {/* Title */}
                     <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--white)' }}>{liv.title}</div>
+
+                    {/* Image générée */}
+                    {liv.image_url && (
+                      <div style={{ marginBottom: 4 }}>
+                        <img src={liv.image_url} alt="Visuel généré" style={{ width: '100%', maxWidth: 320, borderRadius: 8, display: 'block' }} />
+                      </div>
+                    )}
 
                     {/* Content preview */}
                     <div style={{ fontSize: 12, color: 'var(--gray)', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>

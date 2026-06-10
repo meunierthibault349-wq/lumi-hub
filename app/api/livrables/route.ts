@@ -21,7 +21,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { title, type, client, client_color, content, agent_mode } = body;
+  const { title, type, client, client_color, content, agent_mode, image_url } = body;
 
   if (!title || !content) {
     return NextResponse.json({ error: 'title et content requis' }, { status: 400 });
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('livrables_ia')
-    .insert({ title, type, client, client_color, content, agent_mode, status: 'brouillon' })
+    .insert({ title, type, client, client_color, content, agent_mode, image_url: image_url ?? null, status: 'brouillon' })
     .select()
     .single();
 

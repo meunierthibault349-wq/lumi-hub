@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 
-interface ChatMessage { role: 'agent' | 'user'; text: string; }
+interface ChatMessage { role: 'agent' | 'user'; text: string; imageUrl?: string; imageLoading?: boolean; }
 
 const WELCOME = `Bonjour Thibault. Je suis ton Chef Adjoint — j'ai chargé tes clients, projets et tâches en cours.
 
@@ -19,15 +19,16 @@ function extractLivrable(text: string): { type: string; client: string } | null 
 }
 
 function cleanText(text: string): string {
-  return text.replace(/\[MODE:[^\]]+\]/g, '').replace(/\[LIVRABLE:[^\]]+\]/g, '').trim();
+  return text
+    .replace(/\[MODE:[^\]]+\]/g, '')
+    .replace(/\[LIVRABLE:[^\]]+\]/g, '')
+    .replace(/\[IMAGE_PROMPT:[^\]]+\]/g, '')
+    .trim();
 }
 
-function isVisualBrief(text: string): boolean {
-  return text.includes('🎨 BRIEF VISUEL') || (text.includes('📐 FORMAT') && text.includes('🎨 PALETTE'));
-}
-
-function openCanva() {
-  window.open('https://www.canva.com/search/templates?q=instagram+post+social+media', '_blank');
+function extractImagePrompt(text: string): string | null {
+  const m = text.match(/\[IMAGE_PROMPT:\s*([\s\S]+?)\]/);
+  return m ? m[1].trim() : null;
 }
 
 export default function OrchestrerPage() {
@@ -46,7 +47,7 @@ export default function OrchestrerPage() {
     'Lumi': '#0d9488',
   };
 
-  async function handleSave(text: string, mode: string | null) {
+  async function handleSave(text: string, mode: string | null, imageUrl?: string) {
     const liv = extractLivrable(text);
     if (!liv) return;
     const key = `${text.slice(0, 20)}`;
@@ -61,6 +62,7 @@ export default function OrchestrerPage() {
         client_color: CLIENT_COLORS[liv.client] ?? '#0d9488',
         content: cleanText(text),
         agent_mode: mode ?? 'Chef Adjoint',
+        image_url: imageUrl ?? null,
       }),
     });
     setTimeout(() => setSaved(null), 3000);
@@ -114,6 +116,35 @@ export default function OrchestrerPage() {
           upd[upd.length - 1] = { role: 'agent', text: full };
           return upd;
         });
+      }
+
+      // Auto-génération d'image si IMAGE_PROMPT détecté
+      const imagePrompt = extractImagePrompt(full);
+      if (imagePrompt) {
+        setMessages(prev => {
+          const upd = [...prev];
+          upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: true };
+          return upd;
+        });
+        try {
+          const imgRes = await fetch('/api/image-gen', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: imagePrompt, size: 'square_hd' }),
+          });
+          const imgData = await imgRes.json();
+          setMessages(prev => {
+            const upd = [...prev];
+            upd[upd.length - 1] = { ...upd[upd.length - 1], imageUrl: imgData.url, imageLoading: false };
+            return upd;
+          });
+        } catch {
+          setMessages(prev => {
+            const upd = [...prev];
+            upd[upd.length - 1] = { ...upd[upd.length - 1], imageLoading: false };
+            return upd;
+          });
+        }
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== 'AbortError') {
@@ -174,11 +205,29 @@ export default function OrchestrerPage() {
                 {display || (isAgent && streaming && isLast ? (
                   <span style={{ opacity: .4 }}>...</span>
                 ) : '')}
+                {isAgent && msg.imageLoading && (
+                  <div style={{ marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.06)', fontSize: 12, color: 'var(--gray)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⏳</span>
+                    Génération de l&apos;image en cours...
+                  </div>
+                )}
+                {isAgent && msg.imageUrl && (
+                  <div style={{ marginTop: 12 }}>
+                    <img
+                      src={msg.imageUrl}
+                      alt="Visuel généré"
+                      style={{ width: '100%', maxWidth: 400, borderRadius: 10, display: 'block' }}
+                    />
+                    <a href={msg.imageUrl} download target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 8, padding: '4px 12px', borderRadius: 6, background: 'rgba(0,210,200,.1)', border: '1px solid rgba(0,210,200,.25)', color: 'var(--teal)', fontSize: 11, fontWeight: 600, textDecoration: 'none' }}>
+                      ⬇ Télécharger
+                    </a>
+                  </div>
+                )}
               </div>
               {livrable && !streaming && (
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button
-                    onClick={() => handleSave(msg.text, activeMode)}
+                    onClick={() => handleSave(msg.text, activeMode, msg.imageUrl)}
                     style={{ padding: '5px 12px', borderRadius: 6, background: saved ? 'rgba(52,211,153,.12)' : 'rgba(0,210,200,.1)', border: `1px solid ${saved ? 'rgba(52,211,153,.3)' : 'rgba(0,210,200,.25)'}`, color: saved ? '#34d399' : 'var(--teal)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
                   >
                     {saved ? '✓ Sauvegardé dans Livrables' : `💾 Sauvegarder · ${livrable.type}`}
