@@ -22,7 +22,7 @@ const PACKS = [
 function extractMrr(tags: string[]): number {
   for (const tag of tags) {
     const p = PACKS.find(p => p.value === tag);
-    if (p) return p.mrr;
+    if (p) return p.mrr ?? 0;
   }
   return 0;
 }

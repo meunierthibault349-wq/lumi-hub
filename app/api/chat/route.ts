@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest } from 'next/server';
-import { AGENT_SYSTEM_PROMPTS } from '@/lib/agents-prompts';
+import { getSystemPrompt } from '@/lib/agent-prompts';
 
 export async function POST(req: NextRequest) {
   const { messages, agentName } = await req.json();
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   }
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const systemPrompt = AGENT_SYSTEM_PROMPTS[agentName] ?? AGENT_SYSTEM_PROMPTS['default'];
+  const systemPrompt = getSystemPrompt(agentName);
 
   const readable = new ReadableStream({
     async start(controller) {
