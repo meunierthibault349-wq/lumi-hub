@@ -27,8 +27,36 @@ export default function OrchestrerPage() {
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
   const [activeMode, setActiveMode] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
   const messagesEl = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const CLIENT_COLORS: Record<string, string> = {
+    'BeLoc': '#C9A96E',
+    '100P Location': '#8B1E2F',
+    'TYT03': '#EF9F27',
+    'Lumi': '#0d9488',
+  };
+
+  async function handleSave(text: string, mode: string | null) {
+    const liv = extractLivrable(text);
+    if (!liv) return;
+    const key = `${text.slice(0, 20)}`;
+    setSaved(key);
+    await fetch('/api/livrables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: `${liv.type} — ${liv.client}`,
+        type: liv.type.toLowerCase().replace(/\s+/g, '-'),
+        client: liv.client,
+        client_color: CLIENT_COLORS[liv.client] ?? '#0d9488',
+        content: cleanText(text),
+        agent_mode: mode ?? 'Chef Adjoint',
+      }),
+    });
+    setTimeout(() => setSaved(null), 3000);
+  }
 
   useEffect(() => {
     if (messagesEl.current) {
@@ -141,10 +169,10 @@ export default function OrchestrerPage() {
               </div>
               {livrable && !streaming && (
                 <button
-                  onClick={() => alert(`✅ Livrable prêt à sauvegarder :\nType : ${livrable.type}\nClient : ${livrable.client}\n\n(Phase B — la sauvegarde Supabase arrive bientôt)`)}
-                  style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(0,210,200,.1)', border: '1px solid rgba(0,210,200,.25)', color: 'var(--teal)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                  onClick={() => handleSave(msg.text, activeMode)}
+                  style={{ padding: '5px 12px', borderRadius: 6, background: saved ? 'rgba(52,211,153,.12)' : 'rgba(0,210,200,.1)', border: `1px solid ${saved ? 'rgba(52,211,153,.3)' : 'rgba(0,210,200,.25)'}`, color: saved ? '#34d399' : 'var(--teal)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
                 >
-                  💾 Sauvegarder le livrable · {livrable.type}
+                  {saved ? '✓ Sauvegardé dans Livrables' : `💾 Sauvegarder · ${livrable.type}`}
                 </button>
               )}
             </div>
