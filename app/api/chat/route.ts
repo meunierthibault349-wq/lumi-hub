@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import { getSystemPrompt } from '@/lib/agent-prompts';
 
 export async function POST(req: NextRequest) {
-  const { messages, agentName } = await req.json();
+  const { messages, agentName, clientContextText } = await req.json();
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return new Response(
@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
   }
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const systemPrompt = getSystemPrompt(agentName);
+  let systemPrompt = getSystemPrompt(agentName);
+  if (clientContextText) {
+    systemPrompt = `CONTEXTE CLIENT ACTIF :\n${clientContextText}\n\n---\n\n${systemPrompt}`;
+  }
 
   const readable = new ReadableStream({
     async start(controller) {

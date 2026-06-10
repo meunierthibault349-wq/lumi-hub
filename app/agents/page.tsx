@@ -1,14 +1,14 @@
 'use client';
-import { useState, useRef, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
 import { AGENTS_DATA, AgentDef } from '@/lib/data';
+import { useClientContext } from '@/components/ClientContextProvider';
 import type { jsPDF as JsPDFType } from 'jspdf';
 
 interface ChatMessage { role: 'agent' | 'user'; text: string; }
 interface ActiveAgent { name: string; emoji: string; pole: string; }
 
 function AgentsInner() {
-  const searchParams = useSearchParams();
+  const { activeClient } = useClientContext();
   const [activeAgent, setActiveAgent] = useState<ActiveAgent | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -16,7 +16,7 @@ function AgentsInner() {
   const messagesEl = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const clientContext = searchParams.get('client');
+  const clientContext = activeClient?.ref ?? null;
 
   function openAgent(a: AgentDef, pole: string) {
     if (a.recruit) return;
@@ -79,7 +79,11 @@ function AgentsInner() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages, agentName: activeAgent.name }),
+        body: JSON.stringify({
+          messages: apiMessages,
+          agentName: activeAgent.name,
+          clientContextText: activeClient?.context,
+        }),
         signal: abortRef.current.signal,
       });
 
@@ -133,7 +137,7 @@ function AgentsInner() {
     doc.text('LUMI', margin, 14);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Agent : ${activeAgent.name}${clientContext ? ` — ${clientContext}` : ''}`, margin + 20, 14);
+    doc.text(`Agent : ${activeAgent.name}${activeClient ? ` — ${activeClient.name}` : ''}`, margin + 20, 14);
     const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
     doc.text(dateStr, pageW - margin - doc.getTextWidth(dateStr), 14);
 
@@ -185,9 +189,9 @@ function AgentsInner() {
       <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
         <div className="page-title">Agents IA</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>20 agents actifs</span>
-        {clientContext && (
-          <span style={{ fontSize: 12, fontWeight: 600, background: 'rgba(13,148,136,.15)', color: 'var(--teal-light)', padding: '3px 12px', borderRadius: 20, border: '1px solid rgba(13,148,136,.3)' }}>
-            Mode client : {clientContext}
+        {activeClient && (
+          <span style={{ fontSize: 12, fontWeight: 600, background: `${activeClient.color}18`, color: activeClient.color, padding: '3px 12px', borderRadius: 20, border: `1px solid ${activeClient.color}44` }}>
+            Mode client : {activeClient.name}
           </span>
         )}
         <div style={{ marginLeft: 'auto' }} />
@@ -246,8 +250,23 @@ function AgentsInner() {
             </div>
 
             {/* Context banner */}
-            <div style={{ padding: '8px 16px', background: 'rgba(13,148,136,.08)', borderBottom: '1px solid rgba(255,255,255,.04)', fontSize: 12, color: 'var(--gray)' }}>
-              <strong style={{ color: 'var(--teal-light)' }}>Contexte :</strong> Lumi · Thibault · 2 clients actifs (100P + BeLoc)
+            <div style={{
+              padding: '8px 16px',
+              background: activeClient ? `${activeClient.color}12` : 'rgba(13,148,136,.08)',
+              borderBottom: '1px solid rgba(255,255,255,.04)',
+              fontSize: 12,
+              color: 'var(--gray)',
+              borderLeft: activeClient ? `3px solid ${activeClient.color}` : '3px solid var(--teal)',
+            }}>
+              {activeClient ? (
+                <>
+                  <strong style={{ color: activeClient.color }}>Client actif :</strong> {activeClient.name} — contexte injecté dans le system prompt
+                </>
+              ) : (
+                <>
+                  <strong style={{ color: 'var(--teal-light)' }}>Contexte :</strong> Lumi · Thibault · Aucun client sélectionné
+                </>
+              )}
             </div>
 
             {/* Messages */}
@@ -297,9 +316,5 @@ function AgentsInner() {
 }
 
 export default function AgentsPage() {
-  return (
-    <Suspense fallback={null}>
-      <AgentsInner />
-    </Suspense>
-  );
+  return <AgentsInner />;
 }
