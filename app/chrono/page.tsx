@@ -151,11 +151,11 @@ export default function ChronoPage() {
         </span>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+      <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
 
         {/* Timer + controls */}
         <div className="panel" style={{ marginBottom: 20, padding: '28px 32px', textAlign: 'center' }}>
-          <div style={{
+          <div className="chrono-timer" style={{
             fontFamily: 'var(--font-jakarta)', fontSize: 64, fontWeight: 800, letterSpacing: 4,
             color: active ? 'var(--teal-light)' : 'var(--gray-dim)',
             transition: 'color .3s',
@@ -205,7 +205,7 @@ export default function ChronoPage() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <div className="r-g2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
 
           {/* KPIs */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
