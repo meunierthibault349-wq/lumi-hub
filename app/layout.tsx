@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={`${jakarta.variable} ${inter.variable} h-full`}>
       <body
         className="h-full flex overflow-hidden"
-        style={{ background: 'var(--night)', color: 'var(--white)', fontFamily: 'var(--font-inter), sans-serif' }}
+        style={{ color: 'var(--white)', fontFamily: 'var(--font-inter), sans-serif' }}
       >
         <AppShell>{children}</AppShell>
       </body>

@@ -15,7 +15,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ClientContextProvider>
       <Sidebar />
-      <main className="flex-1 flex flex-col overflow-hidden">{children}</main>
+      <main key={pathname} className="flex-1 flex flex-col overflow-hidden main-content page-enter">
+        {children}
+      </main>
       <BottomNav />
     </ClientContextProvider>
   );
