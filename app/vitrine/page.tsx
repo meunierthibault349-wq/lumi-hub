@@ -140,7 +140,7 @@ export default function VitrinePage() {
                         <path d="M18 28 Q24 32 30 28" stroke="#5DCAA5" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
                       </svg>
                     </div>
-                    <span>+ 17 experts IA dans votre équipe</span>
+                    <span>+ 28 agents IA dans votre équipe</span>
                   </div>
                   <div className="hero__cta" data-reveal="" style={{ ['--d' as string]: '280ms' }}>
                     <a className="btn btn--primary btn--lg" href="#offres">Découvrir nos offres
@@ -435,13 +435,13 @@ export default function VitrinePage() {
           <div className="wrap">
             <div className="section-head" data-reveal="">
               <span className="eyebrow">L&apos;équipe Lumi</span>
-              <h2>17 experts IA. Actifs 24 h/24, 7 j/7.</h2>
+              <h2>28 agents IA. Actifs 24 h/24, 7 j/7.</h2>
               <p>Chaque client Lumi dispose d&apos;une équipe complète de spécialistes IA dédiés. Pas de sous-traitance. Pas d&apos;intermédiaire.</p>
             </div>
 
             <div className="section-equipe-stats" data-reveal="">
               <div className="equipe-stat">
-                <strong data-counter="17" data-suffix="">17</strong>
+                <strong data-counter="28" data-suffix="">28</strong>
                 <span>agents actifs</span>
               </div>
               <div className="equipe-stat">
@@ -722,25 +722,25 @@ export default function VitrinePage() {
         <section className="section" id="offres">
           <div className="wrap">
             <div className="section-head" data-reveal="">
-              <span className="eyebrow">Nos 3 axes d&apos;expertise</span>
-              <h2>Trois leviers, un seul cabinet.</h2>
-              <p>Communication, web et automatisation IA — combinés et adaptés à votre maturité digitale.</p>
+              <span className="eyebrow">Nos offres</span>
+              <h2>Un pack mensuel. Des résultats mesurables.</h2>
+              <p>Trois niveaux d&apos;accompagnement — vous commencez là où vous en êtes, vous évoluez au rythme de vos résultats.</p>
             </div>
             <div className="offers-grid">
               <article className="offer" data-reveal="">
                 <div className="offer__num">01</div>
                 <div className="offer__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-9 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.2A8.5 8.5 0 0 1 12 3a8.38 8.38 0 0 1 9 8.5z"/></svg></div>
-                <h3>Communication &amp; Social Media</h3>
-                <p className="offer__desc">Faire de vos réseaux une machine à leads — du contenu qui travaille, pas du contenu décoratif.</p>
+                <h3>Pack Présence</h3>
+                <p className="offer__desc">Poser des fondations solides : site, fiche Google et premier réseau social. L&apos;essentiel pour exister en ligne et être trouvé.</p>
                 <ul className="offer__list">
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Audit + positionnement éditorial business-first</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Calendrier mensuel : éducatif · inspirant · commercial</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Production : visuels, reels, carrousels, stories</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Reporting mensuel : portée, engagement, leads</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Site vitrine 3–5 pages inclus (one-shot 1 500 €)</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Google Business Profile : 4 posts / mois</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>1 réseau social : 8 posts / mois</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Point mensuel 30 min + rapport synthétique</li>
                 </ul>
                 <div className="offer__foot">
-                  <span className="offer__price">Packs mensuels<b>dès 290 €/mois</b></span>
-                  <a className="link-arrow" href="#contact" aria-label="En parler — Communication & Social Media">En parler<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                  <span className="offer__price">Mensuel · engagement 6 mois<b>490 €/mois</b></span>
+                  <a className="link-arrow" href="#contact" aria-label="En parler — Pack Présence">En parler<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
                 </div>
               </article>
 
@@ -748,34 +748,34 @@ export default function VitrinePage() {
                 <span className="offer__tag">Le plus demandé</span>
                 <div className="offer__num">02</div>
                 <div className="offer__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M7 21h10"/></svg></div>
-                <h3>Développement Web &amp; Design</h3>
-                <p className="offer__desc">Votre site doit générer des clients. Chaque décision de design est dictée par la conversion.</p>
+                <h3>Pack Croissance</h3>
+                <p className="offer__desc">Accélérer la visibilité et convertir le trafic en clients. Site optimisé, deux réseaux actifs, SEO local.</p>
                 <ul className="offer__list">
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Conception UX/UI orientée conversion</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Webflow, WordPress ou custom + réservation</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>SEO technique &amp; local (Google Business Profile)</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Formation + support inclus</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Site vitrine avancé ou e-commerce (2 500–4 200 €)</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Google Business Profile hebdo + gestion des avis</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>2 réseaux sociaux : 12 posts / mois</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>SEO local + rapport mensuel détaillé</li>
                 </ul>
                 <div className="offer__foot">
-                  <span className="offer__price">Site vitrine · 2–4 sem.<b>dès 890 €</b></span>
-                  <a className="link-arrow" href="#contact" aria-label="En parler — Développement Web & Design">En parler<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                  <span className="offer__price">Mensuel · engagement 6 mois<b>890 €/mois</b></span>
+                  <a className="link-arrow" href="#contact" aria-label="En parler — Pack Croissance">En parler<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
                 </div>
               </article>
 
               <article className="offer" data-reveal="" style={{ ['--d' as string]: '240ms' }}>
                 <div className="offer__num">03</div>
-                <div className="offer__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg></div>
-                <h3>Automatisation IA &amp; Outils</h3>
-                <p className="offer__desc">Automatiser ce qui vous coûte du temps. L&apos;IA comme outil opérationnel, pas comme gadget.</p>
+                <div className="offer__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                <h3>Pack Acquisition</h3>
+                <p className="offer__desc">Dominer votre marché local. Pub payante, trois réseaux, reporting avancé et réactivité maximale.</p>
                 <ul className="offer__list">
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Les 6 automatisations prioritaires (RDV, devis, avis…)</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Chatbots &amp; FAQ WhatsApp Business / site</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Outils sur mesure : devis, dashboards, CRM</li>
-                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Formation complète de vos équipes</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Tout le Pack Croissance inclus</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>3 réseaux sociaux : 16 posts / mois</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>1 campagne pub : Meta Ads ou Google Ads</li>
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Reporting avancé + réactivité sous 24 h</li>
                 </ul>
                 <div className="offer__foot">
-                  <span className="offer__price">Pack one-shot · 1 sem.<b>dès 590 €</b></span>
-                  <a className="link-arrow" href="#contact" aria-label="En parler — Automatisation IA & Outils">En parler<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                  <span className="offer__price">Mensuel · engagement 6 mois<b>1 490 €/mois</b></span>
+                  <a className="link-arrow" href="#contact" aria-label="En parler — Pack Acquisition">En parler<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
                 </div>
               </article>
             </div>
