@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import './globals.css';
-import Sidebar from '@/components/Sidebar';
-import BottomNav from '@/components/BottomNav';
-import { ClientContextProvider } from '@/components/ClientContextProvider';
+import AppShell from '@/components/AppShell';
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -30,13 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="h-full flex overflow-hidden"
         style={{ background: 'var(--night)', color: 'var(--white)', fontFamily: 'var(--font-inter), sans-serif' }}
       >
-        <ClientContextProvider>
-          <Sidebar />
-          <main className="flex-1 flex flex-col overflow-hidden">
-            {children}
-          </main>
-          <BottomNav />
-        </ClientContextProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
