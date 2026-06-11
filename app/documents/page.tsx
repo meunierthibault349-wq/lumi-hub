@@ -16,7 +16,7 @@ type Doc = {
 const CATS = [
   { key: 'contexte', label: 'Contexte',   icon: '◈' },
   { key: 'clients',  label: 'Clients',    icon: '◉' },
-  { key: 'import',   label: 'Documents',  icon: '◎' },
+  { key: 'lumi',     label: 'Lumi',       icon: '◐' },
   { key: 'config',   label: 'Config',     icon: '◇' },
 ];
 
