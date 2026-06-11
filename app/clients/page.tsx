@@ -46,6 +46,7 @@ export default function ClientsPage() {
     email: '',
   });
 
+  const [editEmail, setEditEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +66,18 @@ export default function ClientsPage() {
     });
   }, []);
 
-  function openClient(c: ClientRow) { setSelected(c); setTab('missions'); }
+  function openClient(c: ClientRow) { setSelected(c); setTab('missions'); setEditEmail(null); }
+
+  async function saveEmail() {
+    if (!selected || editEmail === null) return;
+    const { error } = await supabase.from('clients').update({ email: editEmail }).eq('id', selected.id);
+    if (!error) {
+      const updated = { ...selected, email: editEmail };
+      setSelected(updated);
+      setClients(prev => prev.map(c => c.id === selected.id ? updated : c));
+    }
+    setEditEmail(null);
+  }
 
   function openModal() {
     setForm({ name: '', sector: '', pack: 'Pack Starter', mrr: '', contact: '', email: '' });
@@ -247,7 +259,25 @@ export default function ClientsPage() {
               </div>
               <div>
                 <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginBottom: 2 }}>EMAIL</div>
-                <div style={{ fontSize: 12 }}>{selected.email}</div>
+                {editEmail !== null ? (
+                  <input
+                    autoFocus
+                    value={editEmail}
+                    onChange={e => setEditEmail(e.target.value)}
+                    onBlur={saveEmail}
+                    onKeyDown={e => { if (e.key === 'Enter') saveEmail(); if (e.key === 'Escape') setEditEmail(null); }}
+                    style={{ fontSize: 12, background: 'var(--night-2)', border: '1px solid rgba(13,148,136,.4)', borderRadius: 4, padding: '2px 6px', color: 'var(--white)', fontFamily: 'inherit', width: 180, outline: 'none' }}
+                  />
+                ) : (
+                  <div style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span>{selected.email || <span style={{ color: 'var(--gray-dim)' }}>—</span>}</span>
+                    <button
+                      onClick={() => setEditEmail(selected.email ?? '')}
+                      style={{ background: 'none', border: 'none', color: 'var(--teal)', cursor: 'pointer', fontSize: 10, padding: 0, fontFamily: 'inherit' }}>
+                      Modifier
+                    </button>
+                  </div>
+                )}
               </div>
               <div style={{ marginLeft: 'auto' }}>
                 <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginBottom: 2 }}>STATUT</div>
