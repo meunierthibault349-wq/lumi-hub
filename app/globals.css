@@ -37,6 +37,17 @@ body {
 }
 .page-enter { animation: pageEnter 0.22s cubic-bezier(0.4,0,0.2,1) both; }
 
+/* ── SKELETON LOADER ── */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.skeleton {
+  background: rgba(255,255,255,0.07);
+  border-radius: 6px;
+  animation: skeletonPulse 1.6s ease-in-out infinite;
+}
+
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--night-4); border-radius: 3px; }

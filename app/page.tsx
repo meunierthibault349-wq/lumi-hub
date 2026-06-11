@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, TaskRow, ProjectRow, MilestoneRow } from '@/lib/supabase';
 import MissionSlideOver from '@/components/MissionSlideOver';
+import { SkeletonMetricCard, SkeletonListRow } from '@/components/Skeleton';
 
 const MRR_OBJECTIF = 5000;
 
@@ -18,9 +19,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from('tasks').select('*').order('priority', { ascending: false }),
+      supabase.from('tasks').select('id,title,priority,done,project,overdue').order('priority', { ascending: false }),
       supabase.from('projects').select('*'),
-      supabase.from('milestones').select('*').order('date'),
+      supabase.from('milestones').select('id,title,date,client_color').order('date'),
       supabase.from('clients').select('mrr'),
     ]).then(([tasksRes, projectsRes, milestonesRes, clientsRes]) => {
       const firstError = tasksRes.error || projectsRes.error || milestonesRes.error || clientsRes.error;
@@ -83,33 +84,36 @@ export default function Dashboard() {
 
       <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
-          <div className="metric-card">
-            <div className="metric-label">MRR actuel</div>
-            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{mrrTotal.toLocaleString('fr-FR')} €</div>
-            <div className="metric-sub">Objectif : {MRR_OBJECTIF.toLocaleString('fr-FR')} €/mois · {mrrPct}%</div>
-            <div className="progress-bar" style={{ marginTop: 10 }}><div className="progress-fill" style={{ width: `${mrrPct}%` }} /></div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-label">Projets actifs</div>
-            <div className="metric-val">{activeMissions.length}</div>
-            <div className="metric-sub">sur {projects.length} missions totales</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-label">Tâches urgentes</div>
-            <div className="metric-val" style={{ color: 'var(--amber)' }}>{urgent}</div>
-            <div className="metric-sub">priorité P7 ou plus</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-label">Prochain jalon</div>
-            {nextMilestone ? (
-              <>
-                <div className="metric-val" style={{ fontSize: 18, color: nextMilestone.d <= 7 ? '#f87171' : nextMilestone.d <= 14 ? 'var(--amber)' : 'var(--mint)' }}>
-                  {daysLabel(nextMilestone.d)}
-                </div>
-                <div className="metric-sub">{nextMilestone.title.split(' — ')[0]} · {new Date(nextMilestone.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
-              </>
-            ) : <div className="metric-val">—</div>}
-          </div>
+          {loading && [0,1,2,3].map(i => <SkeletonMetricCard key={i} />)}
+          {!loading && <>
+            <div className="metric-card">
+              <div className="metric-label">MRR actuel</div>
+              <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{mrrTotal.toLocaleString('fr-FR')} €</div>
+              <div className="metric-sub">Objectif : {MRR_OBJECTIF.toLocaleString('fr-FR')} €/mois · {mrrPct}%</div>
+              <div className="progress-bar" style={{ marginTop: 10 }}><div className="progress-fill" style={{ width: `${mrrPct}%` }} /></div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Projets actifs</div>
+              <div className="metric-val">{activeMissions.length}</div>
+              <div className="metric-sub">sur {projects.length} missions totales</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Tâches urgentes</div>
+              <div className="metric-val" style={{ color: 'var(--amber)' }}>{urgent}</div>
+              <div className="metric-sub">priorité P7 ou plus</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Prochain jalon</div>
+              {nextMilestone ? (
+                <>
+                  <div className="metric-val" style={{ fontSize: 18, color: nextMilestone.d <= 7 ? '#f87171' : nextMilestone.d <= 14 ? 'var(--amber)' : 'var(--mint)' }}>
+                    {daysLabel(nextMilestone.d)}
+                  </div>
+                  <div className="metric-sub">{nextMilestone.title.split(' — ')[0]} · {new Date(nextMilestone.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
+                </>
+              ) : <div className="metric-val">—</div>}
+            </div>
+          </>}
         </div>
 
         <div className="r-g2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
@@ -127,9 +131,10 @@ export default function Dashboard() {
                   <span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span>
                 </div>
               ))}
-              {topTasks.length === 0 && (
-                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>
-                  {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Toutes les tâches sont terminées ✓'}
+              {loading && [0,1,2,3].map(i => <SkeletonListRow key={i} />)}
+              {!loading && topTasks.length === 0 && (
+                <div style={{ padding: 20, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
+                  {error ? `Erreur : ${error}` : 'Toutes les tâches sont terminées ✓'}
                 </div>
               )}
             </div>

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { supabase, TaskRow } from '@/lib/supabase';
+import { SkeletonTableRow } from '@/components/Skeleton';
 
 const PROJECTS = ['all', 'BeLoc', '100P', 'Lumi Cabinet', 'Interne', 'Prospection'];
 const PROJECT_LABELS: Record<string, string> = { all: 'Toutes', BeLoc: 'BeLoc', '100P': '100P', 'Lumi Cabinet': 'Cabinet', Interne: 'Interne', Prospection: 'Prospection' };
@@ -72,19 +73,27 @@ export default function TachesPage() {
 
   async function addTask() {
     if (!newTask.title.trim()) return;
+    // Optimistic insert — affiche immédiatement sans attendre Supabase
+    const optimisticId = crypto.randomUUID();
+    const optimistic: TaskRow = { id: optimisticId, title: newTask.title, project: newTask.project, priority: newTask.priority, due: newTask.due, done: false, overdue: false };
+    setTasks(prev => [optimistic, ...prev]);
+    setLocalOrder(prev => [optimisticId, ...prev]);
+    setNewTask({ title: '', project: 'BeLoc', priority: 6, due: '' });
+    setShowModal(false);
+
     const { data, error } = await supabase.from('tasks').insert([{
-      title: newTask.title,
-      project: newTask.project,
-      priority: newTask.priority,
-      due: newTask.due,
-      done: false,
-      overdue: false,
+      title: optimistic.title, project: optimistic.project,
+      priority: optimistic.priority, due: optimistic.due, done: false, overdue: false,
     }]).select().single();
-    if (!error && data) {
-      setTasks(prev => [data, ...prev]);
-      setLocalOrder(prev => [data.id, ...prev]);
-      setNewTask({ title: '', project: 'BeLoc', priority: 6, due: '' });
-      setShowModal(false);
+
+    if (error) {
+      // Rollback
+      setTasks(prev => prev.filter(t => t.id !== optimisticId));
+      setLocalOrder(prev => prev.filter(i => i !== optimisticId));
+    } else if (data) {
+      // Remplace l'ID temporaire par l'ID réel Supabase
+      setTasks(prev => prev.map(t => t.id === optimisticId ? data : t));
+      setLocalOrder(prev => prev.map(i => i === optimisticId ? data.id : i));
     }
   }
 
@@ -192,9 +201,11 @@ export default function TachesPage() {
             );
           })}
 
-          {filtered.length === 0 && (
+          {loading && [0,1,2,3,4].map(i => <SkeletonTableRow key={i} cols={7} />)}
+
+          {!loading && filtered.length === 0 && (
             <div style={{ padding: 24, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
-              {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Aucune tâche'}
+              {error ? `Erreur : ${error}` : 'Aucune tâche'}
             </div>
           )}
         </div>

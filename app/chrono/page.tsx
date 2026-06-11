@@ -1,6 +1,7 @@
 ﻿'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase, ChronoSessionRow } from '@/lib/supabase';
+import { SkeletonChronoRow } from '@/components/Skeleton';
 
 const PROJECTS = ['100P Location', 'BeLoc', 'Lumi Cabinet', 'Prospection', 'Interne'];
 
@@ -256,9 +257,10 @@ export default function ChronoPage() {
             </div>
           </div>
 
-          {displayedReversed.length === 0 ? (
+          {loading && [0,1,2].map(i => <SkeletonChronoRow key={i} />)}
+          {!loading && displayedReversed.length === 0 ? (
             <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: 'var(--gray-dim)' }}>
-              {loading ? 'Chargement…' : `Aucune session${view === 'today' ? " aujourd'hui" : view === 'week' ? ' cette semaine' : ''}.`}
+              {`Aucune session${view === 'today' ? " aujourd'hui" : view === 'week' ? ' cette semaine' : ''}.`}
             </div>
           ) : (
             displayedReversed.map(s => (
