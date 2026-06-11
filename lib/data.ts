@@ -82,8 +82,8 @@ export const AGENTS_DATA: PoleData[] = [
 ];
 
 export const MORNING_AGENTS = [
-  { e: '🌐', n: 'Web Developer',  firstName: 'Maxime',   reason: 'Site BeLoc à finaliser' },
-  { e: '🤝', n: 'Account Manager', firstName: 'Hugo',    reason: 'Relance BeLoc infos manquantes' },
-  { e: '📱', n: 'Instagram',       firstName: 'Emma',    reason: 'Calendrier 100P juillet' },
-  { e: '💰', n: 'Finance',         firstName: 'Claire',  reason: 'Facture BeLoc juin à envoyer' },
+  { e: '🤝', n: 'Account Manager', firstName: 'Hugo',    reason: 'Relance BeLoc + 100P — signatures devis en attente' },
+  { e: '🎯', n: 'Prospection',     firstName: 'Alex',    reason: 'MRR à 490 € — trouver 5 nouveaux clients' },
+  { e: '📱', n: 'Instagram',       firstName: 'Emma',    reason: 'Calendrier 100P juillet à préparer' },
+  { e: '⚖️', n: 'Legal',           firstName: 'Matthieu', reason: 'Contrats BeLoc + 100P à formaliser' },
 ];
