@@ -93,27 +93,35 @@ export default function LivrablesPage() {
   const [filter, setFilter] = useState('all');
   const [iaLivrables, setIaLivrables] = useState<LivrableIA[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const fetchLivrables = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/livrables');
-    const data = await res.json();
-    setIaLivrables(data.livrables ?? []);
-    setLoading(false);
+    setFetchError(null);
+    try {
+      const res = await fetch('/api/livrables');
+      if (!res.ok) throw new Error(`Erreur ${res.status}`);
+      const data = await res.json();
+      setIaLivrables(data.livrables ?? []);
+    } catch (e) {
+      setFetchError(e instanceof Error ? e.message : 'Erreur inconnue');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetchLivrables(); }, [fetchLivrables]);
 
   async function updateStatus(id: string, status: string) {
-    await fetch('/api/livrables', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) });
-    setIaLivrables(prev => prev.map(l => l.id === id ? { ...l, status: status as LivrableIA['status'] } : l));
+    const res = await fetch('/api/livrables', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) });
+    if (res.ok) setIaLivrables(prev => prev.map(l => l.id === id ? { ...l, status: status as LivrableIA['status'] } : l));
   }
 
   async function deleteLivrable(id: string) {
-    await fetch(`/api/livrables?id=${id}`, { method: 'DELETE' });
-    setIaLivrables(prev => prev.filter(l => l.id !== id));
+    const res = await fetch(`/api/livrables?id=${id}`, { method: 'DELETE' });
+    if (res.ok) setIaLivrables(prev => prev.filter(l => l.id !== id));
   }
 
   function copyContent(id: string, content: string) {
@@ -173,6 +181,8 @@ export default function LivrablesPage() {
         {tab === 'ia' && (
           loading ? (
             <div style={{ color: 'var(--gray)', fontSize: 13, textAlign: 'center', marginTop: 60 }}>Chargement...</div>
+          ) : fetchError ? (
+            <div style={{ color: '#f87171', fontSize: 13, textAlign: 'center', marginTop: 60 }}>Erreur : {fetchError}</div>
           ) : filteredIA.length === 0 ? (
             <div style={{ textAlign: 'center', marginTop: 80 }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>⚡</div>

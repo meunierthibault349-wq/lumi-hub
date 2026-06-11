@@ -80,3 +80,12 @@ export type MilestoneRow = {
   color: string;
   client_color: string;
 };
+
+export type ChronoSessionRow = {
+  id: string;
+  description: string;
+  project: string;
+  start_ts: number;
+  end_ts: number | null;
+  created_at?: string;
+};

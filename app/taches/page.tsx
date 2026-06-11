@@ -41,15 +41,15 @@ export default function TachesPage() {
   }
 
   async function deleteTask(id: string) {
-    await supabase.from('tasks').delete().eq('id', id);
-    setTasks(prev => prev.filter(t => t.id !== id));
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    if (!error) setTasks(prev => prev.filter(t => t.id !== id));
   }
 
   async function clearDone() {
     const ids = tasks.filter(t => t.done).map(t => t.id);
     if (!ids.length) return;
-    await supabase.from('tasks').delete().in('id', ids);
-    setTasks(prev => prev.filter(t => !t.done));
+    const { error } = await supabase.from('tasks').delete().in('id', ids);
+    if (!error) setTasks(prev => prev.filter(t => !t.done));
   }
 
   async function addTask() {

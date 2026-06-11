@@ -1,26 +1,8 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-interface Session {
-  id: string;
-  description: string;
-  project: string;
-  start: number;
-  end: number | null;
-}
+import { supabase, ChronoSessionRow } from '@/lib/supabase';
 
 const PROJECTS = ['100P Location', 'BeLoc', 'Lumi Cabinet', 'Prospection', 'Interne'];
-
-const STORAGE_KEY = 'lumi-chrono-sessions';
-
-function loadSessions(): Session[] {
-  if (typeof window === 'undefined') return [];
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'); } catch { return []; }
-}
-
-function saveSessions(sessions: Session[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-}
 
 function formatDuration(ms: number): string {
   const h = Math.floor(ms / 3600000);
@@ -56,36 +38,45 @@ const PROJECT_COLORS: Record<string, string> = {
 };
 
 export default function ChronoPage() {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [active, setActive] = useState<Session | null>(null);
+  const [sessions, setSessions] = useState<ChronoSessionRow[]>([]);
+  const [active, setActive] = useState<ChronoSessionRow | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [desc, setDesc] = useState('');
   const [project, setProject] = useState(PROJECTS[2]);
   const [view, setView] = useState<'today' | 'week' | 'all'>('today');
+  const [loading, setLoading] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    const all = loadSessions();
-    setSessions(all);
-    const running = all.find(s => s.end === null);
-    if (running) {
-      setActive(running);
-      setDesc(running.description);
-      setProject(running.project);
+  const loadSessions = useCallback(async () => {
+    const { data } = await supabase
+      .from('chrono_sessions')
+      .select('*')
+      .order('start_ts', { ascending: true });
+    if (data) {
+      setSessions(data);
+      const running = data.find(s => s.end_ts === null);
+      if (running) {
+        setActive(running);
+        setDesc(running.description);
+        setProject(running.project);
+      }
     }
+    setLoading(false);
   }, []);
+
+  useEffect(() => { loadSessions(); }, [loadSessions]);
 
   const tick = useCallback(() => {
     setActive(prev => {
       if (!prev) return prev;
-      setElapsed(Date.now() - prev.start);
+      setElapsed(Date.now() - prev.start_ts);
       return prev;
     });
   }, []);
 
   useEffect(() => {
     if (active) {
-      setElapsed(Date.now() - active.start);
+      setElapsed(Date.now() - active.start_ts);
       intervalRef.current = setInterval(tick, 1000);
     } else {
       setElapsed(0);
@@ -94,40 +85,44 @@ export default function ChronoPage() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [active, tick]);
 
-  function startSession() {
+  async function startSession() {
     if (!desc.trim()) return;
-    const s: Session = { id: crypto.randomUUID(), description: desc.trim(), project, start: Date.now(), end: null };
-    const updated = [...sessions, s];
-    setSessions(updated);
-    saveSessions(updated);
-    setActive(s);
+    const s: ChronoSessionRow = { id: crypto.randomUUID(), description: desc.trim(), project, start_ts: Date.now(), end_ts: null };
+    const { error } = await supabase.from('chrono_sessions').insert([s]);
+    if (!error) {
+      setSessions(prev => [...prev, s]);
+      setActive(s);
+    }
   }
 
-  function stopSession() {
+  async function stopSession() {
     if (!active) return;
-    const updated = sessions.map(s => s.id === active.id ? { ...s, end: Date.now() } : s);
-    setSessions(updated);
-    saveSessions(updated);
-    setActive(null);
-    setDesc('');
+    const end_ts = Date.now();
+    const { error } = await supabase.from('chrono_sessions').update({ end_ts }).eq('id', active.id);
+    if (!error) {
+      setSessions(prev => prev.map(s => s.id === active.id ? { ...s, end_ts } : s));
+      setActive(null);
+      setDesc('');
+    }
   }
 
-  function deleteSession(id: string) {
-    const updated = sessions.filter(s => s.id !== id);
-    setSessions(updated);
-    saveSessions(updated);
-    if (active?.id === id) setActive(null);
+  async function deleteSession(id: string) {
+    const { error } = await supabase.from('chrono_sessions').delete().eq('id', id);
+    if (!error) {
+      setSessions(prev => prev.filter(s => s.id !== id));
+      if (active?.id === id) setActive(null);
+    }
   }
 
-  const todaySessions = sessions.filter(s => isToday(s.start) && s.end !== null);
-  const weekSessions = sessions.filter(s => isThisWeek(s.start) && s.end !== null);
-  const allDone = sessions.filter(s => s.end !== null);
+  const todaySessions = sessions.filter(s => isToday(s.start_ts) && s.end_ts !== null);
+  const weekSessions = sessions.filter(s => isThisWeek(s.start_ts) && s.end_ts !== null);
+  const allDone = sessions.filter(s => s.end_ts !== null);
 
-  const todayMs = todaySessions.reduce((sum, s) => sum + (s.end! - s.start), 0);
-  const weekMs = weekSessions.reduce((sum, s) => sum + (s.end! - s.start), 0);
+  const todayMs = todaySessions.reduce((sum, s) => sum + (s.end_ts! - s.start_ts), 0);
+  const weekMs = weekSessions.reduce((sum, s) => sum + (s.end_ts! - s.start_ts), 0);
 
   const weekByProject: Record<string, number> = {};
-  weekSessions.forEach(s => { weekByProject[s.project] = (weekByProject[s.project] ?? 0) + (s.end! - s.start); });
+  weekSessions.forEach(s => { weekByProject[s.project] = (weekByProject[s.project] ?? 0) + (s.end_ts! - s.start_ts); });
   const maxProjectMs = Math.max(...Object.values(weekByProject), 1);
 
   const displayed = view === 'today' ? todaySessions : view === 'week' ? weekSessions : allDone;
@@ -212,12 +207,12 @@ export default function ChronoPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="metric-card">
                 <div className="metric-label">Aujourd'hui</div>
-                <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{formatDuration(todayMs)}</div>
+                <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{loading ? '…' : formatDuration(todayMs)}</div>
                 <div className="metric-sub">{todaySessions.length} session{todaySessions.length !== 1 ? 's' : ''}</div>
               </div>
               <div className="metric-card">
                 <div className="metric-label">Cette semaine</div>
-                <div className="metric-val" style={{ color: 'var(--mint)' }}>{formatDuration(weekMs)}</div>
+                <div className="metric-val" style={{ color: 'var(--mint)' }}>{loading ? '…' : formatDuration(weekMs)}</div>
                 <div className="metric-sub">{weekSessions.length} session{weekSessions.length !== 1 ? 's' : ''}</div>
               </div>
             </div>
@@ -263,7 +258,7 @@ export default function ChronoPage() {
 
           {displayedReversed.length === 0 ? (
             <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: 'var(--gray-dim)' }}>
-              Aucune session{view === 'today' ? " aujourd'hui" : view === 'week' ? ' cette semaine' : ''}.
+              {loading ? 'Chargement…' : `Aucune session${view === 'today' ? " aujourd'hui" : view === 'week' ? ' cette semaine' : ''}.`}
             </div>
           ) : (
             displayedReversed.map(s => (
@@ -273,12 +268,12 @@ export default function ChronoPage() {
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{s.description}</div>
                   <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 2 }}>
-                    {s.project} · {formatTime(s.start)}{s.end ? ` → ${formatTime(s.end)}` : ' · en cours'}
-                    {!isToday(s.start) && ` · ${new Date(s.start).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`}
+                    {s.project} · {formatTime(s.start_ts)}{s.end_ts ? ` → ${formatTime(s.end_ts)}` : ' · en cours'}
+                    {!isToday(s.start_ts) && ` · ${new Date(s.start_ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`}
                   </div>
                 </div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--white)', whiteSpace: 'nowrap' }}>
-                  {s.end ? formatDuration(s.end - s.start) : formatDuration(elapsed)}
+                  {s.end_ts ? formatDuration(s.end_ts - s.start_ts) : formatDuration(elapsed)}
                 </div>
                 <button onClick={() => deleteSession(s.id)}
                   style={{ width: 24, height: 24, borderRadius: 6, background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.2)', color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
