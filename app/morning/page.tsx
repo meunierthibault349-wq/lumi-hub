@@ -1,8 +1,13 @@
 ﻿'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase, TaskRow, MilestoneRow, ClientRow } from '@/lib/supabase';
 import { MORNING_AGENTS } from '@/lib/data';
+
+function dicebearUrl(firstName: string): string {
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(firstName)}&backgroundColor=111827&backgroundType=solid&radius=50`;
+}
 
 const MRR_OBJECTIF = 5000;
 
@@ -247,7 +252,11 @@ export default function MorningPage() {
                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--night-3)', borderRadius: 10, border: '1px solid rgba(255,255,255,.05)', cursor: 'pointer', transition: 'border-color .15s' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(13,148,136,.3)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,.05)')}>
-                  <div className="agent-avatar-wrap" style={{ width: 36, height: 36, fontSize: 16, flexShrink: 0 }}>{a.e}</div>
+                  {a.firstName ? (
+                    <Image src={dicebearUrl(a.firstName)} alt={a.firstName} width={36} height={36} style={{ borderRadius: '50%', flexShrink: 0 }} unoptimized />
+                  ) : (
+                    <div className="agent-avatar-wrap" style={{ width: 36, height: 36, fontSize: 16, flexShrink: 0 }}>{a.e}</div>
+                  )}
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{a.n}</div>
                     <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 1 }}>{a.reason}</div>

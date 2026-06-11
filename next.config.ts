@@ -4,6 +4,16 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
   serverExternalPackages: ['@react-pdf/renderer'],
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/**',
+      },
+    ],
+  },
+
   async rewrites() {
     return {
       beforeFiles: [
