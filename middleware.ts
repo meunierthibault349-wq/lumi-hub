@@ -24,12 +24,14 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isPublic = request.nextUrl.pathname.startsWith('/login') ||
-    request.nextUrl.pathname.startsWith('/auth');
+  const pathname = request.nextUrl.pathname;
+  const isClientPublic = pathname.startsWith('/client/login') || pathname.startsWith('/client/auth');
+  const isAdminPublic = pathname.startsWith('/login') || pathname.startsWith('/auth');
+  const isPublic = isClientPublic || isAdminPublic;
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    url.pathname = pathname.startsWith('/client') ? '/client/login' : '/login';
     return NextResponse.redirect(url);
   }
 

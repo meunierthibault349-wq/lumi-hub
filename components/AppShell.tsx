@@ -6,7 +6,7 @@ import { ClientContextProvider } from './ClientContextProvider';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/auth');
+  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/auth') || pathname?.startsWith('/client');
 
   if (isAuthPage) {
     return <>{children}</>;
