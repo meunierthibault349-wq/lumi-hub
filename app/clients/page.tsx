@@ -47,6 +47,7 @@ export default function ClientsPage() {
   });
 
   const [editEmail, setEditEmail] = useState<string | null>(null);
+  const [saveEmailError, setSaveEmailError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,17 +67,20 @@ export default function ClientsPage() {
     });
   }, []);
 
-  function openClient(c: ClientRow) { setSelected(c); setTab('missions'); setEditEmail(null); }
+  function openClient(c: ClientRow) { setSelected(c); setTab('missions'); setEditEmail(null); setSaveEmailError(null); }
 
   async function saveEmail() {
     if (!selected || editEmail === null) return;
+    setSaveEmailError(null);
     const { error } = await supabase.from('clients').update({ email: editEmail }).eq('id', selected.id);
     if (!error) {
       const updated = { ...selected, email: editEmail };
       setSelected(updated);
       setClients(prev => prev.map(c => c.id === selected.id ? updated : c));
+      setEditEmail(null);
+    } else {
+      setSaveEmailError('Erreur : ' + error.message);
     }
-    setEditEmail(null);
   }
 
   function openModal() {
@@ -260,14 +264,20 @@ export default function ClientsPage() {
               <div>
                 <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginBottom: 2 }}>EMAIL</div>
                 {editEmail !== null ? (
-                  <input
-                    autoFocus
-                    value={editEmail}
-                    onChange={e => setEditEmail(e.target.value)}
-                    onBlur={saveEmail}
-                    onKeyDown={e => { if (e.key === 'Enter') saveEmail(); if (e.key === 'Escape') setEditEmail(null); }}
-                    style={{ fontSize: 12, background: 'var(--night-2)', border: '1px solid rgba(13,148,136,.4)', borderRadius: 4, padding: '2px 6px', color: 'var(--white)', fontFamily: 'inherit', width: 180, outline: 'none' }}
-                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <input
+                        autoFocus
+                        value={editEmail}
+                        onChange={e => { setEditEmail(e.target.value); setSaveEmailError(null); }}
+                        onKeyDown={e => { if (e.key === 'Enter') saveEmail(); if (e.key === 'Escape') { setEditEmail(null); setSaveEmailError(null); } }}
+                        style={{ fontSize: 12, background: 'var(--night-2)', border: '1px solid rgba(13,148,136,.4)', borderRadius: 4, padding: '2px 6px', color: 'var(--white)', fontFamily: 'inherit', width: 160, outline: 'none' }}
+                      />
+                      <button onClick={saveEmail} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, border: 'none', background: 'var(--teal)', color: 'white', cursor: 'pointer', fontFamily: 'inherit' }}>✓</button>
+                      <button onClick={() => { setEditEmail(null); setSaveEmailError(null); }} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(255,255,255,.1)', background: 'transparent', color: 'var(--gray)', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+                    </div>
+                    {saveEmailError && <div style={{ fontSize: 11, color: '#f87171' }}>{saveEmailError}</div>}
+                  </div>
                 ) : (
                   <div style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span>{selected.email || <span style={{ color: 'var(--gray-dim)' }}>—</span>}</span>
