@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-06-11",
+  "last_updated": "2026-06-12",
   "clients": [
     {
       "id": "CLT-001",
@@ -70,6 +70,37 @@
             "instagram-content-strategist",
             "lumi-seo",
             "lumi-google-my-business"
+          ]
+        },
+        {
+          "id": "PRJ-2026-005",
+          "title": "Module de réservation 100P Location",
+          "status": "en_attente_client",
+          "progress": 0,
+          "priority": "haute",
+          "devis": {
+            "ref": "DEV-2026-100P-02",
+            "one_shot": 950,
+            "abonnement": null,
+            "statut": "en_attente_signature",
+            "url": "livrables/clients/100P/devis-module-reservation-100p.html"
+          },
+          "dates": {
+            "start": null,
+            "deadline": null,
+            "delivered": null
+          },
+          "summary": "Module de réservation Option A sur site existant 100p-location.fr. Calendrier dispo, sélection véhicule, formulaire email + WhatsApp. Sans paiement en ligne. Devis DEV-2026-100P-02 émis (950 € HT).",
+          "livrables": [
+            {
+              "title": "Devis DEV-2026-100P-02",
+              "url": "livrables/clients/100P/devis-module-reservation-100p.html",
+              "type": "devis"
+            }
+          ],
+          "agents": [
+            "lumi-web-developer",
+            "lumi-ia-builder"
           ]
         },
         {
