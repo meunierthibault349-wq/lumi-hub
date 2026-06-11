@@ -93,7 +93,7 @@ export default function PipelinePage() {
 
   return (
     <>
-      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb page-topbar">
         <div className="page-title">Pipeline</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>
           {prospects.length} prospect{prospects.length > 1 ? 's' : ''}
@@ -139,7 +139,7 @@ export default function PipelinePage() {
                   onDragOver={e => onDragOver(e, col.id)}
                   onDrop={() => onDrop(col.id)}
                   onDragLeave={() => setDragOver(null)}
-                  style={{ background: 'var(--night-2)', border: `1px solid ${dragOver === col.id ? 'var(--teal)' : 'rgba(255,255,255,.06)'}`, borderRadius: 12, overflow: 'hidden', transition: 'border-color .15s' }}>
+                  className={`kanban-col${dragOver === col.id ? ' drag-over' : ''}`}>
                   <div style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: col.color }} />
                     <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 13, flex: 1 }}>{col.label}</div>
@@ -155,7 +155,7 @@ export default function PipelinePage() {
                         onDragStart={() => onDragStart(card.id, col.id)}
                         onDragEnd={() => setDragging(null)}
                         onClick={() => { setSelected(card); setNoteInput(card.note ?? ''); }}
-                        style={{ background: selected?.id === card.id ? 'rgba(13,148,136,.08)' : 'var(--night-3)', border: `1px solid ${selected?.id === card.id ? 'rgba(13,148,136,.35)' : 'rgba(255,255,255,.06)'}`, borderRadius: 8, padding: 12, cursor: 'pointer', opacity: dragging?.id === card.id ? .5 : 1, transition: 'all .15s' }}>
+                        className={`kanban-card${selected?.id === card.id ? ' selected' : ''}${dragging?.id === card.id ? ' dragging' : ''}`}>
                         <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, color: NAME_COLOR[col.id] }}>{card.name}</div>
                         <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: (card.tags ?? []).length ? 8 : 0 }}>{card.sector}</div>
                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -177,7 +177,7 @@ export default function PipelinePage() {
 
         {/* Slide-over fiche prospect */}
         {selected && (
-          <div className="r-ac" style={{ width: 360, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.06)', display: 'flex', flexDirection: 'column', background: 'var(--night-2)', overflowY: 'auto' }}>
+          <div className="r-ac" style={{ width: 360, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.07)', display: 'flex', flexDirection: 'column', background: 'rgba(11,17,32,0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', overflowY: 'auto' }}>
             {/* Header */}
             <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'flex-start', gap: 12, flexShrink: 0 }}>
               <div style={{ flex: 1 }}>
@@ -225,7 +225,7 @@ export default function PipelinePage() {
                 <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Actions rapides</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <a href={`/agents?client=${encodeURIComponent(selected.name)}`}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, textDecoration: 'none', color: 'var(--white)', fontSize: 13, cursor: 'pointer', transition: 'border-color .15s' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(26,34,53,0.55)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, textDecoration: 'none', color: 'var(--white)', fontSize: 13, cursor: 'pointer', transition: 'border-color .15s, background .15s' }}
                     onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(13,148,136,.3)')}
                     onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,.06)')}>
                     <span style={{ fontSize: 16 }}>⚡</span>
@@ -251,7 +251,7 @@ export default function PipelinePage() {
                   onChange={e => setNoteInput(e.target.value)}
                   placeholder="Contexte, besoins, prochaine action…"
                   rows={4}
-                  style={{ width: '100%', padding: '10px 12px', background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', padding: '10px 12px', background: 'rgba(26,34,53,0.6)', border: '1px solid rgba(255,255,255,.09)', borderRadius: 10, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }}
                 />
                 <button
                   onClick={saveNote}
@@ -277,7 +277,7 @@ export default function PipelinePage() {
       {/* Modal ajout */}
       {showModal && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, width: 480, maxWidth: '95vw', overflow: 'hidden' }}>
+          <div className="modal-card" style={{ width: 480, maxWidth: '95vw' }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 16 }}>Nouveau prospect</div>
               <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setShowModal(false)}>×</button>

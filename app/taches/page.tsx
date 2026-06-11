@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase, TaskRow } from '@/lib/supabase';
 
 const PROJECTS = ['all', 'BeLoc', '100P', 'Lumi Cabinet', 'Interne', 'Prospection'];
@@ -9,23 +9,35 @@ function pClass(p: number) { return p >= 8 ? 'p-high' : p >= 6 ? 'p-mid' : 'p-lo
 
 export default function TachesPage() {
   const [tasks, setTasks] = useState<TaskRow[]>([]);
+  const [localOrder, setLocalOrder] = useState<string[]>([]);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', project: 'BeLoc', priority: 6, due: '' });
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const dragId = useRef<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   useEffect(() => { loadTasks(); }, []);
 
   async function loadTasks() {
     const { data, error } = await supabase.from('tasks').select('*').order('priority', { ascending: false });
     if (error) setError(error.message);
-    else if (data) setTasks(data);
+    else if (data) {
+      setTasks(data);
+      setLocalOrder(prev => prev.length === 0 ? data.map(t => t.id) : prev);
+    }
     setLoading(false);
   }
 
-  const filtered = tasks.filter(t => {
+  // Respect localOrder for display
+  const orderedTasks = localOrder.length > 0
+    ? (localOrder.map(id => tasks.find(t => t.id === id)).filter(Boolean) as TaskRow[])
+      .concat(tasks.filter(t => !localOrder.includes(t.id)))
+    : tasks;
+
+  const filtered = orderedTasks.filter(t => {
     const matchProject = filter === 'all' || t.project === filter;
     const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase());
     return matchProject && matchSearch;
@@ -42,14 +54,20 @@ export default function TachesPage() {
 
   async function deleteTask(id: string) {
     const { error } = await supabase.from('tasks').delete().eq('id', id);
-    if (!error) setTasks(prev => prev.filter(t => t.id !== id));
+    if (!error) {
+      setTasks(prev => prev.filter(t => t.id !== id));
+      setLocalOrder(prev => prev.filter(i => i !== id));
+    }
   }
 
   async function clearDone() {
     const ids = tasks.filter(t => t.done).map(t => t.id);
     if (!ids.length) return;
     const { error } = await supabase.from('tasks').delete().in('id', ids);
-    if (!error) setTasks(prev => prev.filter(t => !t.done));
+    if (!error) {
+      setTasks(prev => prev.filter(t => !t.done));
+      setLocalOrder(prev => prev.filter(i => !ids.includes(i)));
+    }
   }
 
   async function addTask() {
@@ -64,16 +82,43 @@ export default function TachesPage() {
     }]).select().single();
     if (!error && data) {
       setTasks(prev => [data, ...prev]);
+      setLocalOrder(prev => [data.id, ...prev]);
       setNewTask({ title: '', project: 'BeLoc', priority: 6, due: '' });
       setShowModal(false);
     }
   }
 
+  // ── Drag-to-reorder ──
+  function onDragStart(id: string) { dragId.current = id; }
+
+  function onDragOver(e: React.DragEvent, id: string) {
+    e.preventDefault();
+    if (dragId.current && dragId.current !== id) setDragOverId(id);
+  }
+
+  function onDrop(targetId: string) {
+    if (!dragId.current || dragId.current === targetId) { dragId.current = null; setDragOverId(null); return; }
+    const from = dragId.current;
+    setLocalOrder(prev => {
+      const result = [...prev];
+      const fromIdx = result.indexOf(from);
+      const toIdx = result.indexOf(targetId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      result.splice(fromIdx, 1);
+      result.splice(toIdx, 0, from);
+      return result;
+    });
+    dragId.current = null;
+    setDragOverId(null);
+  }
+
+  function onDragEnd() { dragId.current = null; setDragOverId(null); }
+
   return (
     <>
-      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb page-topbar">
         <div className="page-title">Tâches</div>
-        <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>{remaining} restantes</span>
+        <span style={{ fontSize: 13, color: 'var(--gray)', background: 'rgba(255,255,255,.06)', padding: '2px 10px', borderRadius: 20 }}>{remaining} restantes</span>
         <div style={{ marginLeft: 'auto' }} />
         {tasks.some(t => t.done) && (
           <button className="btn" onClick={clearDone} style={{ fontSize: 12, color: 'var(--gray)' }}>
@@ -94,34 +139,59 @@ export default function TachesPage() {
             </button>
           ))}
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…"
-            style={{ marginLeft: 'auto', padding: '7px 14px', background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', width: 220 }} />
+            style={{ marginLeft: 'auto', padding: '7px 14px', background: 'rgba(26,34,53,0.6)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', width: 220 }} />
         </div>
 
         <div className="panel">
-          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px 28px', gap: 14, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
-            <div /><div>Tâche</div><div>Projet</div><div>Échéance</div><div>Priorité</div><div />
+          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '16px 20px 1fr 110px 80px 60px 28px', gap: 12, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+            <div /><div /><div>Tâche</div><div>Projet</div><div>Échéance</div><div>Priorité</div><div />
           </div>
-          {filtered.map(t => (
-            <div key={t.id}
-              className="r-tr"
-              style={{ display: 'grid', gridTemplateColumns: '20px 1fr 110px 80px 60px 28px', gap: 14, padding: '11px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              <div className={`task-check${t.done ? ' done' : ''}`} onClick={() => toggle(t.id)} style={{ cursor: 'pointer' }}>
-                {t.done && <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>✓</span>}
+
+          {filtered.map(t => {
+            const isDragging = dragId.current === t.id;
+            const isDragOver = dragOverId === t.id;
+            return (
+              <div key={t.id}
+                draggable
+                onDragStart={() => onDragStart(t.id)}
+                onDragOver={e => onDragOver(e, t.id)}
+                onDrop={() => onDrop(t.id)}
+                onDragEnd={onDragEnd}
+                className="r-tr"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '16px 20px 1fr 110px 80px 60px 28px',
+                  gap: 12,
+                  padding: '11px 18px',
+                  alignItems: 'center',
+                  borderTop: isDragOver ? '2px solid var(--teal)' : '1px solid rgba(255,255,255,.04)',
+                  background: isDragging ? 'rgba(13,148,136,.05)' : 'transparent',
+                  opacity: isDragging ? 0.4 : 1,
+                  transition: 'background .1s, border-color .1s, opacity .15s',
+                  cursor: 'grab',
+                }}>
+                {/* Drag handle */}
+                <div style={{ color: 'var(--gray-dim)', opacity: 0.5, fontSize: 10, lineHeight: 1 }}>
+                  ⠿
+                </div>
+                {/* Check */}
+                <div className={`task-check${t.done ? ' done' : ''}`} onClick={() => toggle(t.id)} style={{ cursor: 'pointer' }}>
+                  {t.done && <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>✓</span>}
+                </div>
+                <div onClick={() => toggle(t.id)} style={{ fontSize: 13, color: t.done ? 'var(--gray-dim)' : 'var(--white)', textDecoration: t.done ? 'line-through' : 'none', cursor: 'pointer' }}>{t.title}</div>
+                <div className="r-tch"><span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(255,255,255,.06)', color: 'var(--gray)' }}>{t.project}</span></div>
+                <div className="r-tch" style={{ fontSize: 12, color: t.overdue ? '#f87171' : 'var(--gray)' }}>{t.due}</div>
+                <div><span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span></div>
+                <button onClick={() => deleteTask(t.id)}
+                  style={{ width: 26, height: 26, borderRadius: 6, background: 'transparent', border: '1px solid transparent', color: 'var(--gray-dim)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,.12)'; (e.currentTarget as HTMLButtonElement).style.color = '#f87171'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,.2)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray-dim)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent'; }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
               </div>
-              <div onClick={() => toggle(t.id)} style={{ fontSize: 13, color: t.done ? 'var(--gray-dim)' : 'var(--white)', textDecoration: t.done ? 'line-through' : 'none', cursor: 'pointer' }}>{t.title}</div>
-              <div className="r-tch"><span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--night-3)', color: 'var(--gray)' }}>{t.project}</span></div>
-              <div className="r-tch" style={{ fontSize: 12, color: t.overdue ? '#f87171' : 'var(--gray)' }}>{t.due}</div>
-              <div><span className={`priority-badge ${pClass(t.priority)}`}>P{t.priority}</span></div>
-              <button onClick={() => deleteTask(t.id)}
-                style={{ width: 26, height: 26, borderRadius: 6, background: 'transparent', border: '1px solid transparent', color: 'var(--gray-dim)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,.12)'; (e.currentTarget as HTMLButtonElement).style.color = '#f87171'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239,68,68,.2)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray-dim)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent'; }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-              </button>
-            </div>
-          ))}
+            );
+          })}
+
           {filtered.length === 0 && (
             <div style={{ padding: 24, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
               {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Aucune tâche'}
@@ -132,10 +202,10 @@ export default function TachesPage() {
 
       {showModal && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, width: 480, maxWidth: '95vw', overflow: 'hidden' }}>
+          <div className="modal-card" style={{ width: 480, maxWidth: '95vw' }}>
             <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 16 }}>Nouvelle tâche</div>
-              <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setShowModal(false)}>x</button>
+              <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setShowModal(false)}>×</button>
             </div>
             <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div><label className="form-label">Titre</label><input className="form-input" value={newTask.title} onChange={e => setNewTask(p => ({ ...p, title: e.target.value }))} placeholder="Description de la tâche…" autoFocus onKeyDown={e => e.key === 'Enter' && addTask()} /></div>

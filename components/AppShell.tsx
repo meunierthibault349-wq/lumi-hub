@@ -2,6 +2,7 @@
 import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
+import NotifToast from './NotifToast';
 import { ClientContextProvider } from './ClientContextProvider';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -19,6 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <BottomNav />
+      <NotifToast />
     </ClientContextProvider>
   );
 }
