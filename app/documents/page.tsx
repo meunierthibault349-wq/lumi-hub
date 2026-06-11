@@ -2,11 +2,22 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-type Doc = { id: string; title: string; category: string; path: string; content: string; updated_at: string };
+type Doc = {
+  id: string;
+  title: string;
+  category: string;
+  path: string;
+  content: string;
+  file_type: string;
+  file_url: string | null;
+  updated_at: string;
+};
 
 const CATS = [
-  { key: 'contexte', label: 'Contexte', icon: '◈' },
-  { key: 'clients',  label: 'Clients',  icon: '◉' },
+  { key: 'contexte', label: 'Contexte',   icon: '◈' },
+  { key: 'clients',  label: 'Clients',    icon: '◉' },
+  { key: 'import',   label: 'Documents',  icon: '◎' },
+  { key: 'config',   label: 'Config',     icon: '◇' },
 ];
 
 // ── Markdown renderer (no external deps) ──────────────────────────────────
@@ -24,15 +35,10 @@ function inlineFormat(s: string): string {
 }
 
 function renderMd(raw: string): string {
-  // 1. Escape HTML
   let text = esc(raw);
-
-  // 2. Fenced code blocks
   text = text.replace(/```[\w]*\n([\s\S]*?)```/g, (_, code) =>
     `<pre class="md-pre"><code>${code.trimEnd()}</code></pre>`
   );
-
-  // 3. Process line-by-line
   const lines = text.split('\n');
   const out: string[] = [];
   let inTable = false;
@@ -56,61 +62,37 @@ function renderMd(raw: string): string {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trim = line.trim();
-
-    // Table row
     if (trim.startsWith('|')) {
       inTable = true;
-      const cols = trim.replace(/^\||\|$/g, '').split('|');
-      tableRows.push(cols);
+      tableRows.push(trim.replace(/^\||\|$/g, '').split('|'));
       continue;
     } else if (inTable) {
       flushTable();
     }
-
-    // HR
     if (/^-{3,}$/.test(trim)) { out.push('<hr class="md-hr" />'); continue; }
-
-    // Headings
     const h = trim.match(/^(#{1,4}) (.+)$/);
-    if (h) {
-      const level = h[1].length;
-      out.push(`<h${level} class="md-h${level}">${inlineFormat(h[2])}</h${level}>`);
-      continue;
-    }
-
-    // Blockquote
-    if (trim.startsWith('&gt;')) {
-      out.push(`<blockquote class="md-bq">${inlineFormat(trim.slice(4).trim())}</blockquote>`);
-      continue;
-    }
-
-    // Checkboxes
+    if (h) { out.push(`<h${h[1].length} class="md-h${h[1].length}">${inlineFormat(h[2])}</h${h[1].length}>`); continue; }
+    if (trim.startsWith('&gt;')) { out.push(`<blockquote class="md-bq">${inlineFormat(trim.slice(4).trim())}</blockquote>`); continue; }
     if (trim.startsWith('- [ ] ')) { out.push(`<div class="md-li md-check-item">☐ ${inlineFormat(trim.slice(6))}</div>`); continue; }
     if (trim.startsWith('- [x] ') || trim.startsWith('- [X] ')) { out.push(`<div class="md-li md-check-done">☑ ${inlineFormat(trim.slice(6))}</div>`); continue; }
-
-    // Lists
     if (/^[-*] /.test(trim)) { out.push(`<div class="md-li">• ${inlineFormat(trim.slice(2))}</div>`); continue; }
     if (/^\d+\. /.test(trim)) { out.push(`<div class="md-li">${inlineFormat(trim.replace(/^\d+\. /, ''))}</div>`); continue; }
-
-    // Empty line
     if (!trim) { out.push('<div class="md-gap"></div>'); continue; }
-
-    // Paragraph
     out.push(`<p class="md-p">${inlineFormat(trim)}</p>`);
   }
-
   if (inTable) flushTable();
-
   return out.join('\n');
 }
 
-// ── Component ─────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function DocumentsPage() {
-  const [docs, setDocs] = useState<Doc[]>([]);
+  const [docs, setDocs]           = useState<Doc[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [openCats, setOpenCats] = useState<Record<string, boolean>>({ contexte: true, clients: true });
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [openCats, setOpenCats]   = useState<Record<string, boolean>>(
+    Object.fromEntries(CATS.map(c => [c.key, true]))
+  );
+  const [search, setSearch]       = useState('');
+  const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
     supabase.from('jarvis_docs').select('*').order('category').order('title')
@@ -123,7 +105,10 @@ export default function DocumentsPage() {
   const selected = docs.find(d => d.id === selectedId);
 
   const filteredDocs = search
-    ? docs.filter(d => d.title.toLowerCase().includes(search.toLowerCase()) || d.content.toLowerCase().includes(search.toLowerCase()))
+    ? docs.filter(d =>
+        d.title.toLowerCase().includes(search.toLowerCase()) ||
+        d.content.toLowerCase().includes(search.toLowerCase())
+      )
     : docs;
 
   const docsByCategory = CATS.map(cat => ({
@@ -134,6 +119,8 @@ export default function DocumentsPage() {
   function toggleCat(key: string) {
     setOpenCats(p => ({ ...p, [key]: !p[key] }));
   }
+
+  const isPdf = selected?.file_type === 'pdf';
 
   return (
     <>
@@ -159,7 +146,7 @@ export default function DocumentsPage() {
 
         {/* ── Left tree ── */}
         <div style={{
-          width: 210, flexShrink: 0,
+          width: 220, flexShrink: 0,
           borderRight: '1px solid rgba(255,255,255,.06)',
           overflowY: 'auto', padding: '14px 10px',
           background: 'rgba(11,17,32,0.4)',
@@ -187,12 +174,14 @@ export default function DocumentsPage() {
 
               {openCats[cat.key] && cat.docs.map(doc => {
                 const active = selectedId === doc.id;
+                const isPdfDoc = doc.file_type === 'pdf';
                 return (
                   <button
                     key={doc.id}
                     onClick={() => setSelectedId(doc.id)}
                     style={{
-                      display: 'block', width: '100%', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: 7,
+                      width: '100%', textAlign: 'left',
                       padding: '7px 10px 7px 22px', borderRadius: 7, marginTop: 2,
                       background: active ? 'rgba(13,148,136,.15)' : 'transparent',
                       border: `1px solid ${active ? 'rgba(13,148,136,.3)' : 'transparent'}`,
@@ -204,6 +193,14 @@ export default function DocumentsPage() {
                     onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = 'var(--white)'; }}
                     onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; }}
                   >
+                    <span style={{
+                      fontSize: 9, padding: '1px 5px', borderRadius: 3, flexShrink: 0,
+                      background: isPdfDoc ? 'rgba(239,100,39,.15)' : 'rgba(13,148,136,.12)',
+                      color: isPdfDoc ? '#F97316' : 'var(--teal-light)',
+                      fontWeight: 700, letterSpacing: '.5px',
+                    }}>
+                      {isPdfDoc ? 'PDF' : 'MD'}
+                    </span>
                     {doc.title}
                   </button>
                 );
@@ -219,7 +216,7 @@ export default function DocumentsPage() {
         </div>
 
         {/* ── Document viewer ── */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px' }}>
+        <div style={{ flex: 1, overflowY: isPdf ? 'hidden' : 'auto', padding: isPdf ? '28px 36px 0' : '28px 36px', display: 'flex', flexDirection: 'column' }}>
           {!selected && !loading && (
             <div style={{ color: 'var(--gray-dim)', fontSize: 14, textAlign: 'center', paddingTop: 60 }}>
               Sélectionne un document dans le panneau gauche.
@@ -229,28 +226,70 @@ export default function DocumentsPage() {
           {selected && (
             <>
               {/* Doc header */}
-              <div style={{ marginBottom: 24, paddingBottom: 18, borderBottom: '1px solid rgba(255,255,255,.07)' }}>
+              <div style={{ marginBottom: 20, paddingBottom: 18, borderBottom: '1px solid rgba(255,255,255,.07)', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
                   <h1 style={{ fontFamily: 'var(--font-jakarta)', fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--white)' }}>
                     {selected.title}
                   </h1>
-                  <span style={{
-                    fontSize: 11, color: 'var(--gray-dim)', background: 'rgba(255,255,255,.05)',
-                    padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap', flexShrink: 0, marginTop: 4,
-                  }}>
-                    {new Date(selected.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </span>
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                    {isPdf && selected.file_url && (
+                      <a
+                        href={selected.file_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 5,
+                          padding: '5px 12px', borderRadius: 7, fontSize: 12,
+                          background: 'rgba(239,100,39,.12)', border: '1px solid rgba(239,100,39,.25)',
+                          color: '#F97316', textDecoration: 'none', fontWeight: 600,
+                        }}
+                      >
+                        ↗ Ouvrir PDF
+                      </a>
+                    )}
+                    <span style={{
+                      fontSize: 11, color: 'var(--gray-dim)', background: 'rgba(255,255,255,.05)',
+                      padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap', marginTop: 4,
+                    }}>
+                      {new Date(selected.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 5, fontFamily: 'monospace' }}>
                   {selected.path}
                 </div>
               </div>
 
+              {/* PDF viewer */}
+              {isPdf && selected.file_url && (
+                <iframe
+                  src={selected.file_url}
+                  style={{ flex: 1, border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, marginBottom: 28 }}
+                  title={selected.title}
+                />
+              )}
+
+              {isPdf && !selected.file_url && (
+                <div style={{
+                  padding: 24, background: 'rgba(255,255,255,.03)',
+                  border: '1px dashed rgba(255,255,255,.1)', borderRadius: 10,
+                  color: 'var(--gray)', lineHeight: 1.8,
+                }}>
+                  <p>Ce PDF n'a pas encore été uploadé sur Supabase Storage.</p>
+                  <p style={{ marginTop: 8, fontSize: 13 }}>
+                    Pour le rendre accessible ici : upload le fichier dans Storage → bucket <code style={{ color: 'var(--teal-light)', background: 'rgba(13,148,136,.1)', padding: '1px 6px', borderRadius: 4 }}>jarvis-docs</code>,
+                    puis mets à jour la colonne <code style={{ color: 'var(--teal-light)', background: 'rgba(13,148,136,.1)', padding: '1px 6px', borderRadius: 4 }}>file_url</code>.
+                  </p>
+                </div>
+              )}
+
               {/* Markdown content */}
-              <div
-                className="md-content"
-                dangerouslySetInnerHTML={{ __html: renderMd(selected.content) }}
-              />
+              {!isPdf && (
+                <div
+                  className="md-content"
+                  dangerouslySetInnerHTML={{ __html: renderMd(selected.content) }}
+                />
+              )}
             </>
           )}
         </div>
