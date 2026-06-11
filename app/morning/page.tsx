@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, TaskRow, MilestoneRow, ClientRow } from '@/lib/supabase';
@@ -81,7 +81,7 @@ export default function MorningPage() {
 
   return (
     <>
-      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb page-topbar">
         <div className="page-title">Morning Briefing</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>{dateStr}</span>
         {time && <span style={{ fontSize: 13, color: 'var(--teal-light)', background: 'rgba(13,148,136,.1)', padding: '2px 10px', borderRadius: 20, border: '1px solid rgba(13,148,136,.2)' }}>{time}</span>}

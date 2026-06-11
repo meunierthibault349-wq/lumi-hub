@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect } from 'react';
 import { CLIENT_COLOR_KEYWORDS } from '@/lib/client-colors';
 
@@ -95,11 +95,11 @@ export default function CalendarPage() {
   if (notConfigured) {
     return (
       <>
-        <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+        <div className="r-tb page-topbar">
           <div className="page-title">Agenda</div>
         </div>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-          <div style={{ maxWidth: 480, background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, padding: '32px 36px' }}>
+          <div className="modal-card" style={{ maxWidth: 480, padding: '32px 36px' }}>
             <div style={{ fontSize: 32, marginBottom: 16 }}>📅</div>
             <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Agenda non configuré</div>
             <div style={{ fontSize: 13, color: 'var(--gray)', lineHeight: 1.7, marginBottom: 20 }}>
@@ -120,7 +120,7 @@ export default function CalendarPage() {
 
   return (
     <>
-      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb page-topbar">
         <div className="page-title">Agenda</div>
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>
           3 semaines

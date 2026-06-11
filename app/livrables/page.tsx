@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useCallback } from 'react';
 
 // ─── Types statiques ───────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ export default function LivrablesPage() {
   return (
     <>
       {/* Header */}
-      <div style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="page-topbar">
         <div className="page-title">Livrables</div>
 
         {/* Onglets */}

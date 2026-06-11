@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, TaskRow, ProjectRow, MilestoneRow } from '@/lib/supabase';
@@ -73,7 +73,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="r-tb" style={{ padding: '0 28px', height: 60, borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: 'var(--night-2)' }}>
+      <div className="r-tb page-topbar">
         <div className="page-title">Dashboard</div>
         <div className="r-hm" style={{ color: 'var(--gray)', fontSize: 13, marginLeft: 'auto' }}>{dateStr}</div>
         <div style={{ marginLeft: 'auto' }} className="r-hm" />
