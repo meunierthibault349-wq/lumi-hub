@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-key';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 export type TaskRow = {
   id: string;
@@ -20,8 +20,9 @@ export type ProspectRow = {
   id: string;
   name: string;
   sector: string;
-  tags: string[];
+  tags: string[] | null;
   stage: 'froid' | 'contacte' | 'chaud' | 'signe';
+  note?: string;
   created_at?: string;
 };
 
@@ -56,8 +57,8 @@ export type ProjectRow = {
   devis: string;
   deadline: string;
   summary: string;
-  livrables: { icon: string; type: string; name: string }[];
-  agents: string[];
+  livrables: { icon: string; type: string; name: string }[] | null;
+  agents: string[] | null;
   created_at?: string;
 };
 

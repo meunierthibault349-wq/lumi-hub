@@ -13,13 +13,26 @@ export default function Dashboard() {
   const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [mrrTotal, setMrrTotal] = useState(0);
   const [selectedProject, setSelectedProject] = useState<ProjectRow | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from('tasks').select('*').order('priority', { ascending: false }).then(({ data }) => { if (data) setTasks(data); });
-    supabase.from('projects').select('*').then(({ data }) => { if (data) setProjects(data); });
-    supabase.from('milestones').select('*').order('date').then(({ data }) => { if (data) setMilestones(data); });
-    supabase.from('clients').select('mrr').then(({ data }) => {
-      if (data) setMrrTotal(data.reduce((s: number, c: { mrr: number }) => s + c.mrr, 0));
+    Promise.all([
+      supabase.from('tasks').select('*').order('priority', { ascending: false }),
+      supabase.from('projects').select('*'),
+      supabase.from('milestones').select('*').order('date'),
+      supabase.from('clients').select('mrr'),
+    ]).then(([tasksRes, projectsRes, milestonesRes, clientsRes]) => {
+      const firstError = tasksRes.error || projectsRes.error || milestonesRes.error || clientsRes.error;
+      if (firstError) {
+        setError(firstError.message);
+      } else {
+        if (tasksRes.data) setTasks(tasksRes.data);
+        if (projectsRes.data) setProjects(projectsRes.data);
+        if (milestonesRes.data) setMilestones(milestonesRes.data);
+        if (clientsRes.data) setMrrTotal(clientsRes.data.reduce((s: number, c: { mrr: number }) => s + c.mrr, 0));
+      }
+      setLoading(false);
     });
   }, []);
 
@@ -116,7 +129,7 @@ export default function Dashboard() {
               ))}
               {topTasks.length === 0 && (
                 <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>
-                  {tasks.length === 0 ? 'Chargement…' : 'Toutes les tâches sont terminées ✓'}
+                  {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Toutes les tâches sont terminées ✓'}
                 </div>
               )}
             </div>
@@ -149,8 +162,10 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
-              {activeMissions.length === 0 && projects.length === 0 && (
-                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+              {activeMissions.length === 0 && (
+                <div style={{ padding: 20, textAlign: 'center', color: loading ? 'var(--gray-dim)' : error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
+                  {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Aucun projet actif'}
+                </div>
               )}
             </div>
           </div>
@@ -160,12 +175,12 @@ export default function Dashboard() {
           <div className="panel">
             <div className="panel-header"><div className="panel-title">Jalons à venir</div></div>
             <div>
-              {milestonesWithDays.map((j, i) => {
+              {milestonesWithDays.map((j) => {
                 const cls = daysCls(j.d);
                 const bg = cls === 'days-urgent' ? 'rgba(239,68,68,.2)' : cls === 'days-warn' ? 'rgba(239,159,39,.2)' : 'rgba(93,202,165,.15)';
                 const col = cls === 'days-urgent' ? '#f87171' : cls === 'days-warn' ? 'var(--amber)' : 'var(--mint)';
                 return (
-                  <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'flex-start' }}>
+                  <div key={j.id} style={{ display: 'flex', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'flex-start' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: j.client_color, marginTop: 4, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13 }}>{j.title}</div>
@@ -175,7 +190,11 @@ export default function Dashboard() {
                   </div>
                 );
               })}
-              {milestones.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>}
+              {milestones.length === 0 && (
+                <div style={{ padding: 20, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
+                  {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Aucun jalon à venir'}
+                </div>
+              )}
             </div>
           </div>
 

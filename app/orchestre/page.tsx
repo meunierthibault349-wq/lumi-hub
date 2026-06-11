@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { CLIENT_COLORS, COLOR_DEFAULT } from '@/lib/client-colors';
 
 interface ChatMessage { role: 'agent' | 'user'; text: string; imageUrl?: string; imageLoading?: boolean; imageError?: boolean; imagePrompt?: string; }
 
@@ -40,13 +41,6 @@ export default function OrchestrerPage() {
   const messagesEl = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const CLIENT_COLORS: Record<string, string> = {
-    'BeLoc': '#C9A96E',
-    '100P Location': '#8B1E2F',
-    'TYT03': '#EF9F27',
-    'Lumi': '#0d9488',
-  };
-
   async function handleSave(text: string, mode: string | null, imageUrl?: string) {
     const liv = extractLivrable(text);
     if (!liv) return;
@@ -59,7 +53,7 @@ export default function OrchestrerPage() {
         title: `${liv.type} — ${liv.client}`,
         type: liv.type.toLowerCase().replace(/\s+/g, '-'),
         client: liv.client,
-        client_color: CLIENT_COLORS[liv.client] ?? '#0d9488',
+        client_color: CLIENT_COLORS[liv.client] ?? COLOR_DEFAULT,
         content: cleanText(text),
         agent_mode: mode ?? 'Chef Adjoint',
         image_url: imageUrl ?? null,

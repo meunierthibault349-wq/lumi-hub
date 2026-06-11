@@ -13,12 +13,16 @@ export default function TachesPage() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', project: 'BeLoc', priority: 6, due: '' });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { loadTasks(); }, []);
 
   async function loadTasks() {
-    const { data } = await supabase.from('tasks').select('*').order('priority', { ascending: false });
-    if (data) setTasks(data);
+    const { data, error } = await supabase.from('tasks').select('*').order('priority', { ascending: false });
+    if (error) setError(error.message);
+    else if (data) setTasks(data);
+    setLoading(false);
   }
 
   const filtered = tasks.filter(t => {
@@ -119,8 +123,8 @@ export default function TachesPage() {
             </div>
           ))}
           {filtered.length === 0 && (
-            <div style={{ padding: 24, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>
-              {tasks.length === 0 ? 'Chargement…' : 'Aucune tâche'}
+            <div style={{ padding: 24, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
+              {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Aucune tâche'}
             </div>
           )}
         </div>

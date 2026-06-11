@@ -25,11 +25,32 @@ export default function MorningPage() {
   const [milestones, setMilestones] = useState<MilestoneRow[]>([]);
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [time, setTime] = useState('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function loadData() {
+    setRefreshing(true);
+    setError(null);
+    const [tasksRes, milestonesRes, clientsRes] = await Promise.all([
+      supabase.from('tasks').select('*').order('priority', { ascending: false }),
+      supabase.from('milestones').select('*').order('date'),
+      supabase.from('clients').select('*').order('created_at'),
+    ]);
+    const firstError = tasksRes.error || milestonesRes.error || clientsRes.error;
+    if (firstError) {
+      setError(firstError.message);
+    } else {
+      if (tasksRes.data) setTasks(tasksRes.data);
+      if (milestonesRes.data) setMilestones(milestonesRes.data);
+      if (clientsRes.data) setClients(clientsRes.data);
+    }
+    setLoading(false);
+    setRefreshing(false);
+  }
 
   useEffect(() => {
-    supabase.from('tasks').select('*').order('priority', { ascending: false }).then(({ data }) => { if (data) setTasks(data); });
-    supabase.from('milestones').select('*').order('date').then(({ data }) => { if (data) setMilestones(data); });
-    supabase.from('clients').select('*').order('created_at').then(({ data }) => { if (data) setClients(data); });
+    loadData();
     const tick = () => setTime(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
     tick();
     const id = setInterval(tick, 30000);
@@ -39,8 +60,8 @@ export default function MorningPage() {
   async function toggleTask(id: string) {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
-    await supabase.from('tasks').update({ done: !task.done }).eq('id', id);
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    const { error } = await supabase.from('tasks').update({ done: !task.done }).eq('id', id);
+    if (!error) setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
   }
 
   const now = new Date();
@@ -65,6 +86,9 @@ export default function MorningPage() {
         <span style={{ fontSize: 13, color: 'var(--gray)', background: 'var(--night-3)', padding: '2px 10px', borderRadius: 20 }}>{dateStr}</span>
         {time && <span style={{ fontSize: 13, color: 'var(--teal-light)', background: 'rgba(13,148,136,.1)', padding: '2px 10px', borderRadius: 20, border: '1px solid rgba(13,148,136,.2)' }}>{time}</span>}
         <div style={{ marginLeft: 'auto' }} />
+        <button className="btn r-hm" onClick={loadData} disabled={refreshing} style={{ opacity: refreshing ? .6 : 1 }}>
+          {refreshing ? '…' : '↻ Actualiser'}
+        </button>
         <button className="btn primary r-hm" onClick={() => router.push('/agents')}>⚡ Lancer un agent</button>
       </div>
 
@@ -84,23 +108,23 @@ export default function MorningPage() {
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
           <div className="metric-card" style={{ padding: '14px 16px' }}>
             <div className="metric-label">MRR</div>
-            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: 'var(--teal-light)' }}>{clients.length === 0 ? '…' : `${mrrTotal} €`}</div>
+            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: 'var(--teal-light)' }}>{loading ? '…' : `${mrrTotal} €`}</div>
             <div className="progress-bar" style={{ marginTop: 8 }}><div className="progress-fill" style={{ width: `${mrrPct}%` }} /></div>
             <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>{mrrPct}% de {MRR_OBJECTIF} €</div>
           </div>
           <div className="metric-card" style={{ padding: '14px 16px' }}>
             <div className="metric-label">Tâches urgentes</div>
-            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: topTasks.length > 0 ? '#f87171' : 'var(--mint)' }}>{tasks.length === 0 ? '…' : topTasks.length}</div>
+            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: topTasks.length > 0 ? '#f87171' : 'var(--mint)' }}>{loading ? '…' : topTasks.length}</div>
             <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>priorité P7 ou plus</div>
           </div>
           <div className="metric-card" style={{ padding: '14px 16px' }}>
             <div className="metric-label">Jalons à risque</div>
-            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: urgentMilestones.length > 0 ? 'var(--amber)' : 'var(--mint)' }}>{milestones.length === 0 ? '…' : urgentMilestones.length}</div>
+            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: urgentMilestones.length > 0 ? 'var(--amber)' : 'var(--mint)' }}>{loading ? '…' : urgentMilestones.length}</div>
             <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>dans les 14 prochains jours</div>
           </div>
           <div className="metric-card" style={{ padding: '14px 16px' }}>
             <div className="metric-label">Actions en suspens</div>
-            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: 'var(--amber)' }}>{clients.length === 0 ? '…' : totalPending}</div>
+            <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: 'var(--amber)' }}>{loading ? '…' : totalPending}</div>
             <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>sur tous les clients</div>
           </div>
         </div>
@@ -114,8 +138,8 @@ export default function MorningPage() {
             </div>
             <div>
               {topTasks.length === 0 && (
-                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>
-                  {tasks.length === 0 ? 'Chargement…' : 'Toutes les urgences sont traitées ✓'}
+                <div style={{ padding: 20, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
+                  {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Toutes les urgences sont traitées ✓'}
                 </div>
               )}
               {topTasks.map(t => (
@@ -141,16 +165,16 @@ export default function MorningPage() {
             </div>
             <div>
               {urgentMilestones.length === 0 && (
-                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>
-                  {milestones.length === 0 ? 'Chargement…' : 'Aucun jalon dans les 14 prochains jours'}
+                <div style={{ padding: 20, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
+                  {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Aucun jalon dans les 14 prochains jours'}
                 </div>
               )}
-              {urgentMilestones.map((m, i) => {
+              {urgentMilestones.map((m) => {
                 const cls = daysCls(m.d);
                 const col = cls === 'urgent' ? '#f87171' : cls === 'warn' ? 'var(--amber)' : 'var(--mint)';
                 const bg = cls === 'urgent' ? 'rgba(239,68,68,.15)' : cls === 'warn' ? 'rgba(239,159,39,.15)' : 'rgba(93,202,165,.1)';
                 return (
-                  <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'center' }}>
+                  <div key={m.id} style={{ display: 'flex', gap: 12, padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'center' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: m.client_color, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13 }}>{m.title}</div>
@@ -177,7 +201,9 @@ export default function MorningPage() {
             </div>
             <div>
               {clients.length === 0 && (
-                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+                <div style={{ padding: 20, textAlign: 'center', color: error ? '#f87171' : 'var(--gray-dim)', fontSize: 13 }}>
+                  {loading ? 'Chargement…' : error ? `Erreur : ${error}` : 'Aucun client'}
+                </div>
               )}
               {clients.map(c => {
                 const pendingLumi = (c.pending ?? []).filter(p => p.owner === 'lumi').length;

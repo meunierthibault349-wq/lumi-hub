@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase, ClientRow, ProjectRow } from '@/lib/supabase';
+import { CLIENT_AUTO_PALETTE } from '@/lib/client-colors';
 
 const SUGGESTED_AGENTS: Record<string, { e: string; n: string }[]> = {
   'CLT-001': [
@@ -25,18 +26,87 @@ const STATUS_BG: Record<string, string> = {
   actif: 'rgba(93,202,165,.15)', attente_client: 'rgba(239,159,39,.15)', demarrage: 'rgba(148,163,184,.1)',
 };
 
+
+const PACKS_CLIENT = ['Pack Starter', 'Pack Visibilité', 'Pack Performance', 'Pack IA'] as const;
+type PackClient = typeof PACKS_CLIENT[number];
+
 export default function ClientsPage() {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [selected, setSelected] = useState<ClientRow | null>(null);
   const [tab, setTab] = useState<'missions' | 'pending' | 'notes'>('missions');
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    sector: '',
+    pack: 'Pack Starter' as PackClient,
+    mrr: '',
+    contact: '',
+    email: '',
+  });
+
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from('clients').select('*').order('created_at').then(({ data }) => { if (data) setClients(data); });
-    supabase.from('projects').select('*').order('created_at').then(({ data }) => { if (data) setProjects(data); });
+    Promise.all([
+      supabase.from('clients').select('*').order('created_at'),
+      supabase.from('projects').select('*').order('created_at'),
+    ]).then(([clientsRes, projectsRes]) => {
+      const firstError = clientsRes.error || projectsRes.error;
+      if (firstError) {
+        setError(firstError.message);
+      } else {
+        if (clientsRes.data) setClients(clientsRes.data);
+        if (projectsRes.data) setProjects(projectsRes.data);
+      }
+      setLoading(false);
+    });
   }, []);
 
   function openClient(c: ClientRow) { setSelected(c); setTab('missions'); }
+
+  function openModal() {
+    setForm({ name: '', sector: '', pack: 'Pack Starter', mrr: '', contact: '', email: '' });
+    setShowModal(true);
+  }
+
+  async function createClient() {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    const color = CLIENT_AUTO_PALETTE[clients.length % CLIENT_AUTO_PALETTE.length];
+    const { data, error } = await supabase.from('clients').insert([{
+      id: 'CLT-' + Date.now(),
+      name: form.name,
+      sector: form.sector || 'À compléter',
+      pack: form.pack,
+      mrr: Number(form.mrr) || 0,
+      color,
+      status: 'actif' as const,
+      contact: form.contact,
+      email: form.email,
+      last_contact: new Date().toLocaleDateString('fr-FR'),
+      pending: [],
+      notes: [],
+    }]).select().single();
+    setSaving(false);
+    if (!error && data) {
+      setClients(prev => [...prev, data]);
+      setShowModal(false);
+    }
+  }
+
+  async function removePending(text: string) {
+    if (!selected) return;
+    const newPending = (selected.pending ?? []).filter(p => p.text !== text);
+    const { error } = await supabase.from('clients').update({ pending: newPending }).eq('id', selected.id);
+    if (!error) {
+      const updated = { ...selected, pending: newPending };
+      setSelected(updated);
+      setClients(prev => prev.map(c => c.id === selected.id ? updated : c));
+    }
+  }
 
   const totalMrr = clients.reduce((s, c) => s + c.mrr, 0);
   const totalPending = clients.reduce((s, c) => s + (c.pending ?? []).length, 0);
@@ -49,7 +119,7 @@ export default function ClientsPage() {
           {clients.length} actifs · {totalMrr} €/mois
         </span>
         <div style={{ marginLeft: 'auto' }} />
-        <button className="btn primary r-hm">+ Nouveau client</button>
+        <button className="btn primary r-hm" onClick={openModal}>+ Nouveau client</button>
       </div>
 
       <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
@@ -57,17 +127,17 @@ export default function ClientsPage() {
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
           <div className="metric-card">
             <div className="metric-label">Clients actifs</div>
-            <div className="metric-val" style={{ color: 'var(--mint)' }}>{clients.length === 0 ? '…' : clients.length}</div>
+            <div className="metric-val" style={{ color: 'var(--mint)' }}>{loading ? '…' : clients.length}</div>
             <div className="metric-sub">tous signés</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">MRR total</div>
-            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{clients.length === 0 ? '…' : `${totalMrr} €`}</div>
+            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{loading ? '…' : `${totalMrr} €`}</div>
             <div className="metric-sub">abonnements récurrents</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Actions en attente</div>
-            <div className="metric-val" style={{ color: 'var(--amber)' }}>{clients.length === 0 ? '…' : totalPending}</div>
+            <div className="metric-val" style={{ color: 'var(--amber)' }}>{loading ? '…' : totalPending}</div>
             <div className="metric-sub">sur tous les clients</div>
           </div>
           <div className="metric-card">
@@ -77,8 +147,14 @@ export default function ClientsPage() {
           </div>
         </div>
 
-        {clients.length === 0 && (
+        {loading && (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+        )}
+        {!loading && error && (
+          <div style={{ padding: 40, textAlign: 'center', color: '#f87171', fontSize: 13 }}>Erreur : {error}</div>
+        )}
+        {!loading && !error && clients.length === 0 && (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Aucun client pour l'instant.</div>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -228,9 +304,14 @@ export default function ClientsPage() {
                         <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: owner === 'lumi' ? '#f87171' : 'var(--amber)', marginBottom: 8 }}>
                           {owner === 'lumi' ? 'Actions Lumi' : 'Infos à récupérer côté client'}
                         </div>
-                        {items.map((p, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--night-3)', borderRadius: 8, marginBottom: 6, border: `1px solid ${owner === 'lumi' ? 'rgba(239,68,68,.1)' : 'rgba(239,159,39,.1)'}` }}>
-                            <div style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${owner === 'lumi' ? '#f87171' : 'var(--amber)'}`, flexShrink: 0, marginTop: 1 }} />
+                        {items.map((p) => (
+                          <div key={p.text} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--night-3)', borderRadius: 8, marginBottom: 6, border: `1px solid ${owner === 'lumi' ? 'rgba(239,68,68,.1)' : 'rgba(239,159,39,.1)'}` }}>
+                            <div
+                              onClick={(e) => { e.stopPropagation(); removePending(p.text); }}
+                              style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${owner === 'lumi' ? '#f87171' : 'var(--amber)'}`, flexShrink: 0, marginTop: 1, cursor: 'pointer', transition: 'background .15s' }}
+                              onMouseEnter={e => (e.currentTarget.style.background = owner === 'lumi' ? 'rgba(239,68,68,.25)' : 'rgba(239,159,39,.25)')}
+                              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                            />
                             <div style={{ fontSize: 13, lineHeight: 1.4 }}>{p.text}</div>
                           </div>
                         ))}
@@ -242,8 +323,8 @@ export default function ClientsPage() {
 
               {tab === 'notes' && (
                 <>
-                  {(selected.notes ?? []).map((n, i) => (
-                    <div key={i} style={{ fontSize: 13, color: 'var(--gray)', lineHeight: 1.6, background: 'var(--night-3)', borderRadius: 8, padding: '12px 14px', borderLeft: `3px solid ${selected.color}` }}>
+                  {(selected.notes ?? []).map((n) => (
+                    <div key={n} style={{ fontSize: 13, color: 'var(--gray)', lineHeight: 1.6, background: 'var(--night-3)', borderRadius: 8, padding: '12px 14px', borderLeft: `3px solid ${selected.color}` }}>
                       {n}
                     </div>
                   ))}
@@ -274,6 +355,53 @@ export default function ClientsPage() {
             </div>
           </div>
         </>
+      )}
+
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, width: 480, maxWidth: '95vw', overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 16 }}>Nouveau client</div>
+              <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label className="form-label">Nom</label>
+                <input className="form-input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Ex : Boulangerie Martin" autoFocus />
+              </div>
+              <div>
+                <label className="form-label">Secteur</label>
+                <input className="form-input" value={form.sector} onChange={e => setForm(p => ({ ...p, sector: e.target.value }))} placeholder="Ex : Boulangerie artisanale · Vichy" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="form-label">Pack</label>
+                  <select className="form-select" value={form.pack} onChange={e => setForm(p => ({ ...p, pack: e.target.value as PackClient }))}>
+                    {PACKS_CLIENT.map(pk => <option key={pk} value={pk}>{pk}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label">MRR (€/mois)</label>
+                  <input className="form-input" type="number" min={0} value={form.mrr} onChange={e => setForm(p => ({ ...p, mrr: e.target.value }))} placeholder="490" />
+                </div>
+              </div>
+              <div>
+                <label className="form-label">Contact</label>
+                <input className="form-input" value={form.contact} onChange={e => setForm(p => ({ ...p, contact: e.target.value }))} placeholder="Ex : Jean Dupont" />
+              </div>
+              <div>
+                <label className="form-label">Email</label>
+                <input className="form-input" type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="jean@exemple.fr" />
+              </div>
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="btn" onClick={() => setShowModal(false)}>Annuler</button>
+              <button className="btn primary" onClick={createClient} disabled={saving}>
+                {saving ? 'Création…' : 'Créer le client'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

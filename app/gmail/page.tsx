@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { CLIENT_COLOR_KEYWORDS } from '@/lib/client-colors';
 
 interface Thread {
   id: string;
@@ -12,16 +13,9 @@ interface Thread {
   messageCount: number;
 }
 
-const CLIENT_COLORS: Record<string, string> = {
-  '100p': '#8B1E2F',
-  'beloc': '#C9A96E',
-  'taret': '#8B1E2F',
-  'tyt03': '#8B1E2F',
-};
-
 function clientColor(email: string): string | null {
   const lower = email.toLowerCase();
-  for (const [key, color] of Object.entries(CLIENT_COLORS)) {
+  for (const [key, color] of Object.entries(CLIENT_COLOR_KEYWORDS)) {
     if (lower.includes(key)) return color;
   }
   return null;

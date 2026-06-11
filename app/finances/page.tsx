@@ -11,15 +11,64 @@ const STATUS_COLOR: Record<string, string> = {
   encaisse: 'var(--mint)', en_attente: 'var(--amber)', a_faire: '#f87171',
 };
 
+type StatutFacture = 'a_faire' | 'en_attente' | 'encaisse';
+
 export default function FinancesPage() {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [filter, setFilter] = useState<'all' | 'encaisse' | 'en_attente' | 'a_faire'>('all');
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    description: '',
+    client_id: '',
+    amount: '',
+    status: 'a_faire' as StatutFacture,
+  });
+
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from('clients').select('*').order('created_at').then(({ data }) => { if (data) setClients(data); });
-    supabase.from('invoices').select('*').order('created_at').then(({ data }) => { if (data) setInvoices(data); });
+    Promise.all([
+      supabase.from('clients').select('*').order('created_at'),
+      supabase.from('invoices').select('*').order('created_at'),
+    ]).then(([clientsRes, invoicesRes]) => {
+      const firstError = clientsRes.error || invoicesRes.error;
+      if (firstError) {
+        setError(firstError.message);
+      } else {
+        if (clientsRes.data) setClients(clientsRes.data);
+        if (invoicesRes.data) setInvoices(invoicesRes.data);
+      }
+      setLoading(false);
+    });
   }, []);
+
+  function openModal() {
+    setForm({ description: '', client_id: clients[0]?.id ?? '', amount: '', status: 'a_faire' });
+    setShowModal(true);
+  }
+
+  async function createInvoice() {
+    if (!form.description.trim() || !form.client_id) return;
+    setSaving(true);
+    const client = clients.find(c => c.id === form.client_id);
+    const { data, error } = await supabase.from('invoices').insert([{
+      id: 'F-' + Date.now(),
+      client: client?.name ?? '',
+      client_color: client?.color ?? '#0D9488',
+      description: form.description,
+      amount: Number(form.amount) || 0,
+      date: new Date().toLocaleString('fr-FR', { month: 'long', year: 'numeric' }),
+      status: form.status,
+    }]).select().single();
+    setSaving(false);
+    if (!error && data) {
+      setInvoices(prev => [...prev, data]);
+      setShowModal(false);
+    }
+  }
 
   const mrrTotal = clients.reduce((s, c) => s + c.mrr, 0);
   const mrrEncaisse = clients.filter(c => c.status === 'actif').reduce((s, c) => s + c.mrr, 0);
@@ -45,7 +94,7 @@ export default function FinancesPage() {
           Objectif : 5 000 €/mois
         </span>
         <div style={{ marginLeft: 'auto' }} />
-        <button className="btn primary r-hm">+ Nouvelle facture</button>
+        <button className="btn primary r-hm" onClick={openModal}>+ Nouvelle facture</button>
       </div>
 
       <div className="r-pc" style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
@@ -58,7 +107,7 @@ export default function FinancesPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                 <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 800, fontSize: 36, color: 'var(--teal-light)' }}>
-                  {clients.length === 0 ? '…' : `${mrrTotal.toLocaleString('fr-FR')} €`}
+                  {loading ? '…' : `${mrrTotal.toLocaleString('fr-FR')} €`}
                 </span>
                 <span style={{ fontSize: 15, color: 'var(--gray)' }}>/ {OBJECTIF.toLocaleString('fr-FR')} €</span>
               </div>
@@ -109,22 +158,22 @@ export default function FinancesPage() {
         <div className="r-g4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 20 }}>
           <div className="metric-card">
             <div className="metric-label">MRR contractuel</div>
-            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{clients.length === 0 ? '…' : `${mrrTotal} €`}</div>
+            <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{loading ? '…' : `${mrrTotal} €`}</div>
             <div className="metric-sub">{clients.length} client{clients.length > 1 ? 's' : ''} signé{clients.length > 1 ? 's' : ''}</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">Factures encaissées</div>
-            <div className="metric-val" style={{ color: 'var(--mint)' }}>{invoices.length === 0 ? '…' : `${totalEncaisse.toLocaleString('fr-FR')} €`}</div>
+            <div className="metric-val" style={{ color: 'var(--mint)' }}>{loading ? '…' : `${totalEncaisse.toLocaleString('fr-FR')} €`}</div>
             <div className="metric-sub">one-shots + abonnements</div>
           </div>
           <div className="metric-card">
             <div className="metric-label">En attente / À envoyer</div>
-            <div className="metric-val" style={{ color: 'var(--amber)' }}>{invoices.length === 0 ? '…' : `${totalEnAttente.toLocaleString('fr-FR')} €`}</div>
+            <div className="metric-val" style={{ color: 'var(--amber)' }}>{loading ? '…' : `${totalEnAttente.toLocaleString('fr-FR')} €`}</div>
             <div className="metric-sub">à encaisser ce mois</div>
           </div>
           <div className="metric-card">
-            <div className="metric-label">CA juin estimé</div>
-            <div className="metric-val">{invoices.length === 0 ? '…' : `${(totalEncaisse + totalEnAttente).toLocaleString('fr-FR')} €`}</div>
+            <div className="metric-label">CA {new Date().toLocaleString('fr-FR', { month: 'long' })} estimé</div>
+            <div className="metric-val">{loading ? '…' : `${(totalEncaisse + totalEnAttente).toLocaleString('fr-FR')} €`}</div>
             <div className="metric-sub">si tout encaissé</div>
           </div>
         </div>
@@ -136,8 +185,14 @@ export default function FinancesPage() {
               <div className="panel-title">Revenus récurrents</div>
               <span style={{ fontSize: 12, color: 'var(--teal-light)', fontWeight: 600 }}>{mrrTotal} €/mois</span>
             </div>
-            {clients.length === 0 && (
+            {loading && (
               <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+            )}
+            {!loading && error && (
+              <div style={{ padding: 20, textAlign: 'center', color: '#f87171', fontSize: 13 }}>Erreur : {error}</div>
+            )}
+            {!loading && !error && clients.length === 0 && (
+              <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Aucun client.</div>
             )}
             {clients.map(c => (
               <div key={c.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -204,8 +259,14 @@ export default function FinancesPage() {
             <div>Description</div><div>Client</div><div>Montant</div><div>Statut</div>
           </div>
 
-          {invoices.length === 0 && (
+          {loading && (
             <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Chargement…</div>
+          )}
+          {!loading && error && (
+            <div style={{ padding: 20, textAlign: 'center', color: '#f87171', fontSize: 13 }}>Erreur : {error}</div>
+          )}
+          {!loading && !error && invoices.length === 0 && (
+            <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Aucune facture.</div>
           )}
 
           {filtered.map(inv => (
@@ -234,6 +295,49 @@ export default function FinancesPage() {
         </div>
 
       </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, width: 480, maxWidth: '95vw', overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 16 }}>Nouvelle facture</div>
+              <button className="btn" style={{ width: 28, height: 28, padding: 0, fontSize: 14 }} onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label className="form-label">Description</label>
+                <input className="form-input" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Ex : Pack Visibilité — juin 2025" autoFocus />
+              </div>
+              <div>
+                <label className="form-label">Client</label>
+                <select className="form-select" value={form.client_id} onChange={e => setForm(p => ({ ...p, client_id: e.target.value }))}>
+                  {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="form-label">Montant (€)</label>
+                  <input className="form-input" type="number" min={0} value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} placeholder="890" />
+                </div>
+                <div>
+                  <label className="form-label">Statut</label>
+                  <select className="form-select" value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value as StatutFacture }))}>
+                    <option value="a_faire">À envoyer</option>
+                    <option value="en_attente">En attente</option>
+                    <option value="encaisse">Encaissé</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="btn" onClick={() => setShowModal(false)}>Annuler</button>
+              <button className="btn primary" onClick={createInvoice} disabled={saving}>
+                {saving ? 'Création…' : 'Créer la facture'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

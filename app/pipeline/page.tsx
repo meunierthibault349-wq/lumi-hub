@@ -19,8 +19,8 @@ const PACKS = [
   { label: 'Pack IA — sur devis', value: 'Sur devis', mrr: 1500 },
 ];
 
-function extractMrr(tags: string[]): number {
-  for (const tag of tags) {
+function extractMrr(tags: string[] | null | undefined): number {
+  for (const tag of (tags ?? [])) {
     const p = PACKS.find(p => p.value === tag);
     if (p) return p.mrr ?? 0;
   }
@@ -37,6 +37,7 @@ export default function PipelinePage() {
   const [targetCol, setTargetCol] = useState('froid');
   const [form, setForm] = useState({ name: '', sector: '', pack: '' });
   const [noteInput, setNoteInput] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
 
   useEffect(() => { loadProspects(); }, []);
 
@@ -69,6 +70,14 @@ export default function PipelinePage() {
     await supabase.from('prospects').update({ stage }).eq('id', id);
     setProspects(prev => prev.map(p => p.id === id ? { ...p, stage: stage as ProspectRow['stage'] } : p));
     setSelected(prev => prev?.id === id ? { ...prev, stage: stage as ProspectRow['stage'] } : prev);
+  }
+
+  async function saveNote() {
+    if (!selected) return;
+    setNoteSaving(true);
+    const { error } = await supabase.from('prospects').update({ note: noteInput }).eq('id', selected.id);
+    if (!error) setProspects(prev => prev.map(p => p.id === selected.id ? { ...p, note: noteInput } : p));
+    setNoteSaving(false);
   }
 
   function onDragStart(id: string, from: string) { setDragging({ id, from }); }
@@ -145,12 +154,12 @@ export default function PipelinePage() {
                       <div key={card.id} draggable
                         onDragStart={() => onDragStart(card.id, col.id)}
                         onDragEnd={() => setDragging(null)}
-                        onClick={() => setSelected(card)}
+                        onClick={() => { setSelected(card); setNoteInput(card.note ?? ''); }}
                         style={{ background: selected?.id === card.id ? 'rgba(13,148,136,.08)' : 'var(--night-3)', border: `1px solid ${selected?.id === card.id ? 'rgba(13,148,136,.35)' : 'rgba(255,255,255,.06)'}`, borderRadius: 8, padding: 12, cursor: 'pointer', opacity: dragging?.id === card.id ? .5 : 1, transition: 'all .15s' }}>
                         <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, color: NAME_COLOR[col.id] }}>{card.name}</div>
-                        <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: card.tags.length ? 8 : 0 }}>{card.sector}</div>
+                        <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: (card.tags ?? []).length ? 8 : 0 }}>{card.sector}</div>
                         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                          {card.tags.map(tag => <span key={tag} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'var(--night-4)', color: 'var(--gray)' }}>{tag}</span>)}
+                          {(card.tags ?? []).map(tag => <span key={tag} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'var(--night-4)', color: 'var(--gray)' }}>{tag}</span>)}
                         </div>
                       </div>
                     ))}
@@ -197,9 +206,9 @@ export default function PipelinePage() {
               <div>
                 <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Pack estimé</div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {selected.tags.length === 0
+                  {(selected.tags ?? []).length === 0
                     ? <span style={{ fontSize: 12, color: 'var(--gray-dim)' }}>Non défini</span>
-                    : selected.tags.map(t => <span key={t} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 20, background: 'rgba(13,148,136,.1)', color: 'var(--teal-light)', border: '1px solid rgba(13,148,136,.2)' }}>{t}</span>)}
+                    : (selected.tags ?? []).map(t => <span key={t} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 20, background: 'rgba(13,148,136,.1)', color: 'var(--teal-light)', border: '1px solid rgba(13,148,136,.2)' }}>{t}</span>)}
                 </div>
               </div>
 
@@ -244,6 +253,12 @@ export default function PipelinePage() {
                   rows={4}
                   style={{ width: '100%', padding: '10px 12px', background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, color: 'var(--white)', fontSize: 13, fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }}
                 />
+                <button
+                  onClick={saveNote}
+                  disabled={noteSaving}
+                  style={{ marginTop: 8, width: '100%', padding: '8px 0', background: noteSaving ? 'rgba(13,148,136,.06)' : 'rgba(13,148,136,.12)', border: '1px solid rgba(13,148,136,.25)', borderRadius: 8, color: 'var(--teal-light)', fontSize: 12, fontWeight: 600, cursor: noteSaving ? 'default' : 'pointer', fontFamily: 'inherit', opacity: noteSaving ? .6 : 1 }}>
+                  {noteSaving ? 'Enregistrement…' : '💾 Sauvegarder la note'}
+                </button>
               </div>
 
               {/* Danger zone */}

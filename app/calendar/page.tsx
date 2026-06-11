@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { CLIENT_COLOR_KEYWORDS } from '@/lib/client-colors';
 
 interface CalEvent {
   id: string;
@@ -15,13 +16,9 @@ interface CalEvent {
   status: string;
 }
 
-const CLIENT_COLORS: Record<string, string> = {
-  '100p': '#8B1E2F', 'beloc': '#C9A96E', 'taret': '#8B1E2F', 'tyt03': '#8B1E2F',
-};
-
 function eventColor(ev: CalEvent): string {
   const searchStr = [ev.title, ev.description, ...ev.attendees.map(a => a.email)].join(' ').toLowerCase();
-  for (const [key, color] of Object.entries(CLIENT_COLORS)) {
+  for (const [key, color] of Object.entries(CLIENT_COLOR_KEYWORDS)) {
     if (searchStr.includes(key)) return color;
   }
   const GCal: Record<string, string> = {

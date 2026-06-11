@@ -74,11 +74,11 @@ export default function MissionSlideOver({
             <div style={{ fontSize: 13, color: 'var(--gray)', lineHeight: 1.6, background: 'var(--night-3)', borderRadius: 8, padding: 12 }}>{project.summary}</div>
           </div>
 
-          {project.livrables.length > 0 && (
+          {(project.livrables ?? []).length > 0 && (
             <div>
               <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Livrables</div>
-              {project.livrables.map((l, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
+              {(project.livrables ?? []).map((l) => (
+                <div key={l.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
                   <div style={{ width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, background: 'rgba(13,148,136,.12)', flexShrink: 0 }}>{l.icon}</div>
                   <div style={{ fontSize: 13 }}>{l.name}</div>
                 </div>
@@ -89,7 +89,7 @@ export default function MissionSlideOver({
           <div>
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Agents assignés</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {project.agents.map(a => (
+              {(project.agents ?? []).map(a => (
                 <span key={a} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.06)', fontSize: 12, color: 'var(--gray)' }}>🤖 {a}</span>
               ))}
             </div>
