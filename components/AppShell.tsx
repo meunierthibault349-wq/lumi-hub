@@ -5,6 +5,7 @@ import BottomNav from './BottomNav';
 import NotifToast from './NotifToast';
 import { ClientContextProvider } from './ClientContextProvider';
 import { ToastProvider } from '@/context/ToastContext';
+import AIAssistant from './AIAssistant';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -23,6 +24,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </main>
         <BottomNav />
         <NotifToast />
+        <AIAssistant />
       </ClientContextProvider>
     </ToastProvider>
   );
