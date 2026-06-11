@@ -1,14 +1,14 @@
 {
   "version": "1.0",
-  "last_updated": "2026-06-08",
+  "last_updated": "2026-06-11",
   "objectif": "Signer 5 nouveaux clients TPE/PME",
   "stats": {
-    "total": 0,
+    "total": 2,
     "identifie": 0,
     "en_contact": 0,
     "rdv_planifie": 0,
     "proposition_envoyee": 0,
-    "signe": 0,
+    "signe": 2,
     "perdu": 0
   },
   "_schema": {
@@ -34,5 +34,56 @@
     "next_action": "Description de la prochaine action",
     "next_action_date": "YYYY-MM-DD ou null"
   },
-  "prospects": []
+  "prospects": [
+    {
+      "id": "09a5319f-00f2-4ca1-a371-e07fec480942",
+      "company": "100P Location",
+      "sector": "Location voiture sans permis — Vichy",
+      "city": "",
+      "contact_name": "",
+      "contact_email": "",
+      "contact_phone": "",
+      "source": "hub",
+      "status": "signe",
+      "pack_cible": "À définir",
+      "mrr_potentiel": 0,
+      "dates": {
+        "identified": "2026-06-11",
+        "first_contact": null,
+        "rdv": null,
+        "proposition": null,
+        "signature": null
+      },
+      "notes": "",
+      "tags": [
+        "490 €/mois"
+      ],
+      "_source": "hub"
+    },
+    {
+      "id": "a14ebed5-95f8-4da0-994f-187cb3ef7632",
+      "company": "BeLoc",
+      "sector": "Location véhicules luxe — Auvergne-RA",
+      "city": "",
+      "contact_name": "",
+      "contact_email": "",
+      "contact_phone": "",
+      "source": "hub",
+      "status": "signe",
+      "pack_cible": "À définir",
+      "mrr_potentiel": 0,
+      "dates": {
+        "identified": "2026-06-11",
+        "first_contact": null,
+        "rdv": null,
+        "proposition": null,
+        "signature": null
+      },
+      "notes": "",
+      "tags": [
+        "890 €/mois"
+      ],
+      "_source": "hub"
+    }
+  ]
 }

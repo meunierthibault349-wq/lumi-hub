@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-06-08",
+  "last_updated": "2026-06-11",
   "clients": [
     {
       "id": "CLT-001",
@@ -30,10 +30,21 @@
           },
           "summary": "Site production-ready livré en 3 passes expertes (SEO, accessibilité, mobile). Reste Formspree ID et og-image à fournir par le client.",
           "livrables": [
-            { "title": "Site HTML complet", "url": "livrables/clients/100P/site-100p/index.html", "type": "site" },
-            { "title": "Logo système v1.0", "url": "livrables/clients/100P/logo-100p-system.html", "type": "design" }
+            {
+              "title": "Site HTML complet",
+              "url": "livrables/clients/100P/site-100p/index.html",
+              "type": "site"
+            },
+            {
+              "title": "Logo système v1.0",
+              "url": "livrables/clients/100P/logo-100p-system.html",
+              "type": "design"
+            }
           ],
-          "agents": ["web-developer-lumi", "mobile-web-developer"]
+          "agents": [
+            "web-developer-lumi",
+            "mobile-web-developer"
+          ]
         },
         {
           "id": "PRJ-2026-002",
@@ -55,7 +66,11 @@
           },
           "summary": "Calendrier éditorial Instagram juillet 2026 généré (13 posts). SEO local et GMB à démarrer.",
           "livrables": [],
-          "agents": ["instagram-content-strategist", "lumi-seo", "lumi-google-my-business"]
+          "agents": [
+            "instagram-content-strategist",
+            "lumi-seo",
+            "lumi-google-my-business"
+          ]
         },
         {
           "id": "PRJ-2026-003",
@@ -77,7 +92,9 @@
           },
           "summary": "Piste identifiée : outil IA gestion stocks, commandes et recettes pour le marché couvert de Vichy. Devis à construire.",
           "livrables": [],
-          "agents": ["lumi-devis"]
+          "agents": [
+            "lumi-devis"
+          ]
         }
       ]
     },
@@ -109,13 +126,37 @@
           },
           "summary": "Devis révisé DEV-2026-BeLoc-02 envoyé (3 000 € HT, paiement à la livraison). En attente signature et retours recette. 12 infos requises de BeLoc avant mise en ligne.",
           "livrables": [
-            { "title": "Dossier de livraison", "url": "livrables/clients/BeLoc/dossier-livraison-final/00-index-dossier.html", "type": "dossier" },
-            { "title": "Site BeLoc (local)", "url": "livrables/sites-web/beloc-site-repo/index.html", "type": "site" },
-            { "title": "Logo système v1.0", "url": "livrables/clients/BeLoc/logo-beloc-system.html", "type": "design" },
-            { "title": "Devis DEV-2026-BeLoc-01 (remplacé)", "url": "livrables/clients/BeLoc/devis-beloc-2026-06-08.html", "type": "devis" },
-            { "title": "Devis DEV-2026-BeLoc-02 (actif — 3 000 € HT)", "url": "livrables/clients/BeLoc/devis-site-marchand-beloc-v3.html", "type": "devis" }
+            {
+              "title": "Dossier de livraison",
+              "url": "livrables/clients/BeLoc/dossier-livraison-final/00-index-dossier.html",
+              "type": "dossier"
+            },
+            {
+              "title": "Site BeLoc (local)",
+              "url": "livrables/sites-web/beloc-site-repo/index.html",
+              "type": "site"
+            },
+            {
+              "title": "Logo système v1.0",
+              "url": "livrables/clients/BeLoc/logo-beloc-system.html",
+              "type": "design"
+            },
+            {
+              "title": "Devis DEV-2026-BeLoc-01 (remplacé)",
+              "url": "livrables/clients/BeLoc/devis-beloc-2026-06-08.html",
+              "type": "devis"
+            },
+            {
+              "title": "Devis DEV-2026-BeLoc-02 (actif — 3 000 € HT)",
+              "url": "livrables/clients/BeLoc/devis-site-marchand-beloc-v3.html",
+              "type": "devis"
+            }
           ],
-          "agents": ["web-developer-lumi", "mobile-web-developer", "lumi-devis"]
+          "agents": [
+            "web-developer-lumi",
+            "mobile-web-developer",
+            "lumi-devis"
+          ]
         }
       ]
     }

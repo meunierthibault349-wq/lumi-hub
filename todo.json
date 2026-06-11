@@ -300,6 +300,78 @@
       "createdAt": "2026-06-08T19:00:00Z",
       "completedAt": null,
       "source": "init"
+    },
+    {
+      "id": "3830e1b7-e0b3-4ef0-9bce-b6026e4d4d8d",
+      "title": "Récupérer photos RS3 et Golf 8R auprès du client BeLoc",
+      "project": "BeLoc",
+      "due": "11/06",
+      "status": "todo",
+      "priority": 8,
+      "recurring": null,
+      "createdAt": "2026-06-09T14:35:21.437723+00:00",
+      "completedAt": null,
+      "_source": "hub"
+    },
+    {
+      "id": "a8d98fa4-f097-4ee4-a849-4cd485d4e846",
+      "title": "Récupérer infos techniques BeLoc (GA4, Meta Pixel, Formspree, WhatsApp, SIRET)",
+      "project": "BeLoc",
+      "due": "11/06",
+      "status": "todo",
+      "priority": 8,
+      "recurring": null,
+      "createdAt": "2026-06-09T14:35:21.437723+00:00",
+      "completedAt": null,
+      "_source": "hub"
+    },
+    {
+      "id": "1a59ef61-6827-4be4-8a9e-8a41559f3758",
+      "title": "Finaliser page d'accueil BeLoc",
+      "project": "BeLoc",
+      "due": "14/06",
+      "status": "todo",
+      "priority": 7,
+      "recurring": null,
+      "createdAt": "2026-06-09T14:35:21.437723+00:00",
+      "completedAt": null,
+      "_source": "hub"
+    },
+    {
+      "id": "d60cddde-d64c-491f-b25b-e8f99460bf3c",
+      "title": "Rédiger calendrier éditorial juillet 100P",
+      "project": "100P",
+      "due": "15/06",
+      "status": "todo",
+      "priority": 6,
+      "recurring": null,
+      "createdAt": "2026-06-09T14:35:21.437723+00:00",
+      "completedAt": null,
+      "_source": "hub"
+    },
+    {
+      "id": "128a7590-3253-469b-8c5a-51c80da70eee",
+      "title": "Mettre à jour fiche client 100P après dernier appel",
+      "project": "100P",
+      "due": "16/06",
+      "status": "todo",
+      "priority": 5,
+      "recurring": null,
+      "createdAt": "2026-06-09T14:35:21.437723+00:00",
+      "completedAt": null,
+      "_source": "hub"
+    },
+    {
+      "id": "add84603-9eb3-45d7-8a66-6c4c8bfcce05",
+      "title": "Préparer brief site Lumi",
+      "project": "Lumi Cabinet",
+      "due": "20/06",
+      "status": "todo",
+      "priority": 5,
+      "recurring": null,
+      "createdAt": "2026-06-09T14:35:21.437723+00:00",
+      "completedAt": null,
+      "_source": "hub"
     }
   ]
 }
