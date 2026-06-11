@@ -146,7 +146,7 @@
           "devis": {
             "ref": "DEV-2026-BeLoc-02",
             "one_shot": 3000,
-            "abonnement": 890,
+            "abonnement": null,
             "statut": "en_attente_signature",
             "url": "livrables/clients/BeLoc/devis-site-marchand-beloc-v3.html"
           },
