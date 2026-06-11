@@ -1,4 +1,3 @@
-import './vitrine.css';
 import VitrineClient from './VitrineClient';
 
 export default function VitrinePage() {
@@ -976,8 +975,7 @@ export default function VitrinePage() {
             <p data-reveal="" style={{ ['--d' as string]: '200ms', textAlign: 'center', fontSize: '12.5px', color: 'var(--text-dim)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '32px' }}>Toute l&apos;équipe Lumi travaille pour vous, dès le premier jour</p>
 
             <div className="contact-form" data-reveal="" style={{ ['--d' as string]: '220ms' }}>
-              <form name="diagnostic" method="POST" data-netlify="true">
-                <input type="hidden" name="form-name" value="diagnostic" />
+              <form name="diagnostic">
                 <p style={{ display: 'none' }}><input name="bot-field" /></p>
 
                 <div className="contact-form__grid">
@@ -1070,7 +1068,7 @@ export default function VitrinePage() {
               <div className="footer__col">
                 <h4>Contact</h4>
                 <ul>
-                  <li><a href="mailto:contact@lumi.fr" rel="noopener">contact@lumi.fr</a></li>
+                  <li><a href="mailto:contact@lumi-site.fr" rel="noopener">contact@lumi-site.fr</a></li>
                   <li><a href="#contact">Diagnostic Digital 360°</a></li>
                 </ul>
               </div>
@@ -1079,8 +1077,8 @@ export default function VitrinePage() {
           <div className="footer__bottom">
             <span>Lumi © 2026 · Thibault Meunier · Vichy, France</span>
             <span style={{ display: 'flex', gap: '22px', flexWrap: 'wrap' }}>
-              <a href="/mentions-legales" style={{ color: 'inherit' }}>Mentions légales</a>
-              <a href="/politique-confidentialite" style={{ color: 'inherit' }}>Politique de confidentialité</a>
+              <a href="/vitrine/mentions-legales" style={{ color: 'inherit' }}>Mentions légales</a>
+              <a href="/vitrine/politique-confidentialite" style={{ color: 'inherit' }}>Politique de confidentialité</a>
             </span>
           </div>
         </div>

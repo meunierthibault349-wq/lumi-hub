@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import './vitrine.css';
 
 export const metadata: Metadata = {
   title: 'Lumi — Stratégie digitale, Web & IA pour TPE/PME',

@@ -110,19 +110,16 @@ export default function VitrineClient() {
     const contactForm = document.querySelector<HTMLFormElement>('form[name="diagnostic"]');
     const formSuccess = document.getElementById('formSuccess');
     if (contactForm && formSuccess) {
-      const handleSubmit = (e: Event) => {
+      const handleSubmit = async (e: Event) => {
         e.preventDefault();
         const data = new FormData(contactForm);
-        fetch('/', { method: 'POST', body: data })
-          .then(() => {
-            contactForm.style.display = 'none';
-            formSuccess.style.display = 'block';
-          })
-          .catch(() => {
-            /* Affichage succès côté client même sans Netlify */
-            contactForm.style.display = 'none';
-            formSuccess.style.display = 'block';
-          });
+        const btn = contactForm.querySelector<HTMLButtonElement>('button[type="submit"]');
+        if (btn) btn.disabled = true;
+        try {
+          await fetch('/api/contact', { method: 'POST', body: data });
+        } catch (_) { /* affichage succès même en cas d'erreur réseau */ }
+        contactForm.style.display = 'none';
+        formSuccess.style.display = 'block';
       };
       contactForm.addEventListener('submit', handleSubmit);
     }
