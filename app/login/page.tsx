@@ -25,7 +25,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--night-1)' }}>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--night-1)', position: 'fixed', inset: 0 }}>
       <div style={{ width: 380, background: 'var(--night-2)', borderRadius: 16, border: '1px solid rgba(255,255,255,.08)', overflow: 'hidden' }}>
         <div style={{ padding: '28px 32px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', textAlign: 'center' }}>
           <div className="logo-icon" style={{ margin: '0 auto 12px' }}><span>L</span></div>
