@@ -30,6 +30,9 @@ export async function middleware(request: NextRequest) {
   const isPublic = isClientPublic || isAdminPublic;
 
   if (!user && !isPublic) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = pathname.startsWith('/client') ? '/client/login' : '/login';
     return NextResponse.redirect(url);

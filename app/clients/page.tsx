@@ -297,6 +297,17 @@ export default function ClientsPage() {
               </div>
             </div>
 
+            <div style={{ padding: '10px 24px', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', gap: 8 }}>
+              <a href={`/api/pdf/devis?clientId=${selected.id}`} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, background: 'rgba(13,148,136,.12)', color: 'var(--teal)', textDecoration: 'none', fontWeight: 600, border: '1px solid rgba(13,148,136,.2)', fontFamily: 'inherit' }}>
+                Devis PDF
+              </a>
+              <a href={`/api/pdf/rapport?clientId=${selected.id}`} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, background: 'rgba(255,255,255,.04)', color: 'var(--gray)', textDecoration: 'none', fontWeight: 600, border: '1px solid rgba(255,255,255,.08)', fontFamily: 'inherit' }}>
+                Rapport PDF
+              </a>
+            </div>
+
             <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,.06)', padding: '0 24px' }}>
               {(['missions', 'pending', 'notes'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}

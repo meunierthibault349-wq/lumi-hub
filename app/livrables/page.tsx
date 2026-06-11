@@ -240,6 +240,10 @@ export default function LivrablesPage() {
                         {new Date(liv.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                        <a href={`/api/pdf/livrable?livrableId=${liv.id}`} target="_blank" rel="noopener noreferrer"
+                          style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(13,148,136,.08)', border: '1px solid rgba(13,148,136,.2)', color: 'var(--teal)', fontSize: 11, fontFamily: 'inherit', fontWeight: 600, textDecoration: 'none' }}>
+                          PDF
+                        </a>
                         <button onClick={() => copyContent(liv.id, liv.content)} style={{ padding: '4px 10px', borderRadius: 6, background: copied === liv.id ? 'rgba(52,211,153,.12)' : 'var(--night-3)', border: 'none', color: copied === liv.id ? '#34d399' : 'var(--gray)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
                           {copied === liv.id ? '✓ Copié' : 'Copier'}
                         </button>
