@@ -255,8 +255,8 @@ export default function FinancesPage() {
             </div>
           </div>
 
-          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
-            <div>Description</div><div>Client</div><div>Montant</div><div>Statut</div>
+          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px 60px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+            <div>Description</div><div>Client</div><div>Montant</div><div>Statut</div><div></div>
           </div>
 
           {loading && (
@@ -271,7 +271,7 @@ export default function FinancesPage() {
 
           {filtered.map(inv => (
             <div key={inv.id}
-              style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px 60px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
               <div>
@@ -289,6 +289,12 @@ export default function FinancesPage() {
                 <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, fontWeight: 600, background: inv.status === 'encaisse' ? 'rgba(93,202,165,.15)' : inv.status === 'en_attente' ? 'rgba(239,159,39,.15)' : 'rgba(239,68,68,.15)', color: STATUS_COLOR[inv.status] }}>
                   {STATUS_LABEL[inv.status]}
                 </span>
+              </div>
+              <div>
+                <a href={`/api/pdf/facture?invoiceId=${inv.id}`} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 11, padding: '3px 10px', borderRadius: 6, background: 'rgba(13,148,136,.08)', color: 'var(--teal)', border: '1px solid rgba(13,148,136,.2)', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  PDF
+                </a>
               </div>
             </div>
           ))}
