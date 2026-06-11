@@ -28,9 +28,9 @@ export default function Dashboard() {
       if (firstError) {
         setError(firstError.message);
       } else {
-        if (tasksRes.data) setTasks(tasksRes.data);
+        if (tasksRes.data) setTasks(tasksRes.data as TaskRow[]);
         if (projectsRes.data) setProjects(projectsRes.data);
-        if (milestonesRes.data) setMilestones(milestonesRes.data);
+        if (milestonesRes.data) setMilestones(milestonesRes.data as MilestoneRow[]);
         if (clientsRes.data) setMrrTotal(clientsRes.data.reduce((s: number, c: { mrr: number }) => s + c.mrr, 0));
       }
       setLoading(false);
