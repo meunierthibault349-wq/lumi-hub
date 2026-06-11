@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase, TaskRow } from '@/lib/supabase';
 import { SkeletonTableRow } from '@/components/Skeleton';
+import { useToast } from '@/context/ToastContext';
 
 const PROJECTS = ['all', 'BeLoc', '100P', 'Lumi Cabinet', 'Interne', 'Prospection'];
 const PROJECT_LABELS: Record<string, string> = { all: 'Toutes', BeLoc: 'BeLoc', '100P': '100P', 'Lumi Cabinet': 'Cabinet', Interne: 'Interne', Prospection: 'Prospection' };
@@ -19,6 +20,7 @@ export default function TachesPage() {
   const [error, setError] = useState<string | null>(null);
   const dragId = useRef<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => { loadTasks(); }, []);
 
@@ -58,6 +60,7 @@ export default function TachesPage() {
     if (!error) {
       setTasks(prev => prev.filter(t => t.id !== id));
       setLocalOrder(prev => prev.filter(i => i !== id));
+      toast('Tâche supprimée', 'info');
     }
   }
 
@@ -80,6 +83,7 @@ export default function TachesPage() {
     setLocalOrder(prev => [optimisticId, ...prev]);
     setNewTask({ title: '', project: 'BeLoc', priority: 6, due: '' });
     setShowModal(false);
+    toast('Tâche ajoutée', 'success');
 
     const { data, error } = await supabase.from('tasks').insert([{
       title: optimistic.title, project: optimistic.project,

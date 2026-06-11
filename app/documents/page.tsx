@@ -264,6 +264,7 @@ export default function DocumentsPage() {
               {isPdf && selected.file_url && (
                 <iframe
                   src={selected.file_url}
+                  loading="lazy"
                   style={{ flex: 1, border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, marginBottom: 28 }}
                   title={selected.title}
                 />

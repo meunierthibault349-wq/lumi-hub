@@ -204,6 +204,7 @@ export default function Sidebar() {
                   href={item.href}
                   title={!expanded ? item.label : undefined}
                   className={`nav-link${isActive ? ' active' : ''}`}
+                  onMouseEnter={() => router.prefetch(item.href)}
                   style={{
                     justifyContent: expanded ? 'flex-start' : 'center',
                     gap: expanded ? 10 : 0,

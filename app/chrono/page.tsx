@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase, ChronoSessionRow } from '@/lib/supabase';
 import { SkeletonChronoRow } from '@/components/Skeleton';
+import { useToast } from '@/context/ToastContext';
 
 const PROJECTS = ['100P Location', 'BeLoc', 'Lumi Cabinet', 'Prospection', 'Interne'];
 
@@ -47,6 +48,7 @@ export default function ChronoPage() {
   const [view, setView] = useState<'today' | 'week' | 'all'>('today');
   const [loading, setLoading] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const toast = useToast();
 
   const loadSessions = useCallback(async () => {
     const { data } = await supabase
@@ -93,6 +95,7 @@ export default function ChronoPage() {
     if (!error) {
       setSessions(prev => [...prev, s]);
       setActive(s);
+      toast(`Session démarrée — ${project}`, 'success');
     }
   }
 
@@ -101,9 +104,11 @@ export default function ChronoPage() {
     const end_ts = Date.now();
     const { error } = await supabase.from('chrono_sessions').update({ end_ts }).eq('id', active.id);
     if (!error) {
+      const duration = formatDuration(end_ts - active.start_ts);
       setSessions(prev => prev.map(s => s.id === active.id ? { ...s, end_ts } : s));
       setActive(null);
       setDesc('');
+      toast(`Session terminée — ${duration}`, 'info');
     }
   }
 
