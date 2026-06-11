@@ -96,23 +96,24 @@
           "progress": 90,
           "priority": "haute",
           "devis": {
-            "ref": "DEV-2026-BeLoc-01",
-            "one_shot": 4500,
+            "ref": "DEV-2026-BeLoc-02",
+            "one_shot": 3000,
             "abonnement": 890,
-            "statut": "signé",
-            "url": "livrables/clients/BeLoc/dossier-livraison-final/00-index-dossier.html"
+            "statut": "en_attente_signature",
+            "url": "livrables/clients/BeLoc/devis-site-marchand-beloc-v3.html"
           },
           "dates": {
             "start": "2026-06-04",
             "deadline": "2026-06-15",
             "delivered": null
           },
-          "summary": "Dossier de livraison complet envoyé (devis 4 500 € + CDC 10 sections). En attente retours recette. 12 infos requises de BeLoc avant mise en ligne.",
+          "summary": "Devis révisé DEV-2026-BeLoc-02 envoyé (3 000 € HT, paiement à la livraison). En attente signature et retours recette. 12 infos requises de BeLoc avant mise en ligne.",
           "livrables": [
             { "title": "Dossier de livraison", "url": "livrables/clients/BeLoc/dossier-livraison-final/00-index-dossier.html", "type": "dossier" },
             { "title": "Site BeLoc (local)", "url": "livrables/sites-web/beloc-site-repo/index.html", "type": "site" },
             { "title": "Logo système v1.0", "url": "livrables/clients/BeLoc/logo-beloc-system.html", "type": "design" },
-            { "title": "Devis DEV-2026-BeLoc-01", "url": "livrables/clients/BeLoc/devis-beloc-2026-06-08.html", "type": "devis" }
+            { "title": "Devis DEV-2026-BeLoc-01 (remplacé)", "url": "livrables/clients/BeLoc/devis-beloc-2026-06-08.html", "type": "devis" },
+            { "title": "Devis DEV-2026-BeLoc-02 (actif — 3 000 € HT)", "url": "livrables/clients/BeLoc/devis-site-marchand-beloc-v3.html", "type": "devis" }
           ],
           "agents": ["web-developer-lumi", "mobile-web-developer", "lumi-devis"]
         }
