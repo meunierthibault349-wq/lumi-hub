@@ -27,7 +27,7 @@ const STATUS_BG: Record<string, string> = {
 };
 
 
-const PACKS_CLIENT = ['Pack Starter', 'Pack Visibilité', 'Pack Performance', 'Pack IA'] as const;
+const PACKS_CLIENT = ['Pack Présence', 'Pack Croissance', 'Pack Acquisition', 'Pack IA'] as const;
 type PackClient = typeof PACKS_CLIENT[number];
 
 export default function ClientsPage() {
@@ -40,7 +40,7 @@ export default function ClientsPage() {
   const [form, setForm] = useState({
     name: '',
     sector: '',
-    pack: 'Pack Starter' as PackClient,
+    pack: 'Pack Présence' as PackClient,
     mrr: '',
     contact: '',
     email: '',
@@ -84,7 +84,7 @@ export default function ClientsPage() {
   }
 
   function openModal() {
-    setForm({ name: '', sector: '', pack: 'Pack Starter', mrr: '', contact: '', email: '' });
+    setForm({ name: '', sector: '', pack: 'Pack Présence', mrr: '', contact: '', email: '' });
     setShowModal(true);
   }
 
@@ -126,6 +126,11 @@ export default function ClientsPage() {
 
   const totalMrr = clients.reduce((s, c) => s + c.mrr, 0);
   const totalPending = clients.reduce((s, c) => s + (c.pending ?? []).length, 0);
+  const oneShotSigned = projects.reduce((sum, p) => {
+    if (!p.devis || !p.devis.includes('signé')) return sum;
+    const match = p.devis.match(/^([\d\s]+)\s*€\s*one-shot/);
+    return match ? sum + parseInt(match[1].replace(/\s/g, ''), 10) : sum;
+  }, 0);
 
   return (
     <>
@@ -158,8 +163,8 @@ export default function ClientsPage() {
           </div>
           <div className="metric-card">
             <div className="metric-label">CA one-shot signé</div>
-            <div className="metric-val">5 900 €</div>
-            <div className="metric-sub">100P (1 400) + BeLoc (4 500)</div>
+            <div className="metric-val">{loading ? '…' : `${oneShotSigned.toLocaleString('fr-FR')} €`}</div>
+            <div className="metric-sub">projets livrés et signés</div>
           </div>
         </div>
 
@@ -175,7 +180,7 @@ export default function ClientsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {clients.map(c => {
-            const clientProjects = projects.filter(p => p.client_id === c.id);
+            const clientProjects = projects.filter(p => p.client === c.name);
             const activeProjects = clientProjects.filter(p => p.status !== 'livré');
             const pendingLumi = (c.pending ?? []).filter(p => p.owner === 'lumi').length;
             const pendingClient = (c.pending ?? []).filter(p => p.owner === 'client').length;
@@ -319,7 +324,7 @@ export default function ClientsPage() {
 
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               {tab === 'missions' && (() => {
-                const clientProjects = projects.filter(p => p.client_id === selected.id);
+                const clientProjects = projects.filter(p => p.client === selected.name);
                 if (clientProjects.length === 0) return <div style={{ color: 'var(--gray-dim)', fontSize: 13 }}>Aucune mission.</div>;
                 return (
                   <>

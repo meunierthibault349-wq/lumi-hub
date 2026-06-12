@@ -13,9 +13,9 @@ const NAME_COLOR: Record<string, string> = { froid: 'var(--white)', contacte: 'v
 
 const PACKS = [
   { label: '—', value: '' },
-  { label: 'Starter — 490 €/mois', value: '490 €/mois', mrr: 490 },
-  { label: 'Visibilité — 890 €/mois', value: '890 €/mois', mrr: 890 },
-  { label: 'Performance — 1 490 €/mois', value: '1 490 €/mois', mrr: 1490 },
+  { label: 'Présence — 490 €/mois', value: '490 €/mois', mrr: 490 },
+  { label: 'Croissance — 890 €/mois', value: '890 €/mois', mrr: 890 },
+  { label: 'Acquisition — 1 490 €/mois', value: '1 490 €/mois', mrr: 1490 },
   { label: 'Pack IA — sur devis', value: 'Sur devis', mrr: 1500 },
 ];
 

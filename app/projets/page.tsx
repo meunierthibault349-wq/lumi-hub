@@ -108,7 +108,7 @@ export default function ProjetsPage() {
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-dim)', fontSize: 13 }}>Aucun projet pour l'instant.</div>
         )}
         {clients.map(client => {
-          const clientProjects = projects.filter(p => p.client_id === client.id);
+          const clientProjects = projects.filter(p => p.client === client.name);
           if (clientProjects.length === 0) return null;
           return (
             <div key={client.id} style={{ marginBottom: 24 }}>

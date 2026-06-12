@@ -28,6 +28,7 @@ export type ProspectRow = {
 
 export type ClientRow = {
   id: string;
+  ref?: string;
   name: string;
   full_name: string;
   sector: string;
