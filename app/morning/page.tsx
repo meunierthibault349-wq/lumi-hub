@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { supabase, TaskRow, MilestoneRow, ClientRow } from '@/lib/supabase';
 import { MORNING_AGENTS } from '@/lib/data';
 
-function dicebearUrl(firstName: string): string {
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(firstName)}&backgroundColor=111827&backgroundType=solid&radius=50`;
+function dicebearUrl(firstName: string, sex?: 'male' | 'female'): string {
+  const sexParam = sex ? `&sex[]=${sex}` : '';
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(firstName)}&backgroundColor=111827&backgroundType=solid&radius=50${sexParam}`;
 }
 
 const MRR_OBJECTIF = 5000;
@@ -253,7 +254,7 @@ export default function MorningPage() {
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(13,148,136,.3)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,.05)')}>
                   {a.firstName ? (
-                    <Image src={dicebearUrl(a.firstName)} alt={a.firstName} width={36} height={36} style={{ borderRadius: '50%', flexShrink: 0 }} unoptimized />
+                    <Image src={dicebearUrl(a.firstName, a.sex)} alt={a.firstName} width={36} height={36} style={{ borderRadius: '50%', flexShrink: 0 }} unoptimized />
                   ) : (
                     <div className="agent-avatar-wrap" style={{ width: 36, height: 36, fontSize: 16, flexShrink: 0 }}>{a.e}</div>
                   )}

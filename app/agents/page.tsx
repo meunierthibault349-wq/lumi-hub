@@ -6,18 +6,40 @@ import { useClientContext } from '@/components/ClientContextProvider';
 import type { jsPDF as JsPDFType } from 'jspdf';
 
 interface ChatMessage { role: 'agent' | 'user'; text: string; }
-interface ActiveAgent { name: string; firstName: string; pole: string; poleColor: string; }
+interface ActiveAgent { name: string; firstName: string; sex: 'male' | 'female'; pole: string; poleColor: string; }
 
-/** URL d'avatar DiceBear Adventurer à partir d'un prénom */
-function dicebearUrl(firstName: string): string {
+function dicebearUrl(firstName: string, sex?: 'male' | 'female'): string {
   const seed = encodeURIComponent(firstName);
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=111827&backgroundType=solid&radius=50`;
+  const sexParam = sex ? `&sex[]=${sex}` : '';
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=111827&backgroundType=solid&radius=50${sexParam}`;
 }
 
-/** Carte agent avec avatar DiceBear et superpower au hover */
+const PYRAMID_TIERS = [
+  {
+    level: 1,
+    label: 'Direction & Cabinet',
+    description: 'Pilote Lumi, gère les finances et développe le portefeuille clients',
+    connector: 'confie les missions opérationnelles',
+    poleNames: ['Cabinet'],
+  },
+  {
+    level: 2,
+    label: 'Opérations Client',
+    description: "Orchestre chaque mission du devis jusqu'au livrable final",
+    connector: 'commande les livrables aux équipes terrain',
+    poleNames: ['Ops clients'],
+  },
+  {
+    level: 3,
+    label: 'Exécution',
+    description: 'Produit les livrables : contenu, sites web, campagnes, outils IA',
+    connector: null,
+    poleNames: ['Contenu & Réseaux', 'Web & Tech', 'Pub payante'],
+  },
+];
+
 function AgentCard({
   agent,
-  pole,
   poleColor,
   isActive,
   onClick,
@@ -57,54 +79,38 @@ function AgentCard({
         overflow: 'hidden',
       }}
     >
-      {/* Avatar DiceBear */}
       <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
         <Image
-          src={dicebearUrl(agent.firstName)}
+          src={dicebearUrl(agent.firstName, agent.sex)}
           alt={agent.firstName}
           width={52}
           height={52}
           style={{ borderRadius: '50%', display: 'block' }}
           unoptimized
         />
-        {/* Indicateur actif */}
         {isActive && (
           <div style={{
-            position: 'absolute',
-            bottom: 1,
-            right: 1,
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            background: poleColor,
-            border: '2px solid var(--night-2)',
+            position: 'absolute', bottom: 1, right: 1,
+            width: 10, height: 10, borderRadius: '50%',
+            background: poleColor, border: '2px solid var(--night-2)',
           }} />
         )}
       </div>
 
-      {/* Prénom */}
       <div style={{ fontSize: 12, fontWeight: 700, color: agent.recruit ? 'var(--gray)' : 'var(--white)', lineHeight: 1.2 }}>
         {agent.firstName}
       </div>
-
-      {/* Rôle */}
       <div style={{ fontSize: 11, color: 'var(--gray)', lineHeight: 1.2 }}>
         {agent.n}
       </div>
 
-      {/* Superpower — remplace le bouton au hover */}
       {!agent.recruit && agent.superpower && hovered ? (
         <div style={{
-          position: 'absolute',
-          inset: 0,
+          position: 'absolute', inset: 0,
           background: `${poleColor}ee`,
           borderRadius: 12,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '12px',
-          gap: 8,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '12px', gap: 8,
         }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.7)', textTransform: 'uppercase', letterSpacing: 1 }}>
             Superpower
@@ -113,15 +119,9 @@ function AgentCard({
             {agent.superpower}
           </div>
           <div style={{
-            marginTop: 4,
-            padding: '5px 14px',
-            background: 'rgba(0,0,0,.25)',
-            border: '1px solid rgba(255,255,255,.2)',
-            borderRadius: 6,
-            color: '#fff',
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: 'pointer',
+            marginTop: 4, padding: '5px 14px',
+            background: 'rgba(0,0,0,.25)', border: '1px solid rgba(255,255,255,.2)',
+            borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 600, cursor: 'pointer',
           }}>
             Parler à {agent.firstName} ↗
           </div>
@@ -130,18 +130,14 @@ function AgentCard({
         <button
           onClick={e => { e.stopPropagation(); onClick(); }}
           style={{
-            marginTop: 2,
-            padding: '5px 10px',
+            marginTop: 2, padding: '5px 10px',
             background: agent.recruit ? 'rgba(255,255,255,.05)' : `${poleColor}22`,
             border: `1px solid ${agent.recruit ? 'rgba(255,255,255,.1)' : `${poleColor}44`}`,
             borderRadius: 6,
             color: agent.recruit ? 'var(--gray)' : poleColor,
-            fontSize: 11,
-            fontWeight: 600,
+            fontSize: 11, fontWeight: 600,
             cursor: agent.recruit ? 'default' : 'pointer',
-            fontFamily: 'inherit',
-            width: '100%',
-            transition: 'all .15s',
+            fontFamily: 'inherit', width: '100%', transition: 'all .15s',
           }}
         >
           {agent.recruit ? 'Recruter' : 'Lancer ↗'}
@@ -165,7 +161,7 @@ function AgentsInner() {
   function openAgent(a: AgentDef, poleData: PoleData) {
     if (a.recruit) return;
     abortRef.current?.abort();
-    setActiveAgent({ name: a.n, firstName: a.firstName, pole: poleData.pole, poleColor: poleData.color });
+    setActiveAgent({ name: a.n, firstName: a.firstName, sex: a.sex, pole: poleData.pole, poleColor: poleData.color });
     setMessages([{ role: 'agent', text: getWelcome(a.n, clientContext ?? undefined) }]);
     setInput('');
     setStreaming(false);
@@ -198,6 +194,12 @@ function AgentsInner() {
       'Frontend React':    'Prêt à coder. Quel composant ou quelle page React ?',
       'Backend Supabase':  'Prêt pour le backend. Quel schéma, query ou policy Supabase ?',
       'QA':                'Prêt à tester. Quel scénario ou quelle fonctionnalité à auditer ?',
+      'Legal':             'Prêt pour le juridique. Contrat, CGV, mentions légales ou RGPD ?',
+      'IA Builder':        'Prêt pour l\'IA. Quel process à automatiser ou quel chatbot à construire ?',
+      'Copywriter':        'Prêt à rédiger. Texte pour quel support et quel client ?',
+      'Branding':          'Prêt pour le branding. Quel client a besoin d\'une identité visuelle ?',
+      'Sales Coach':       'Prêt pour la vente. Quel appel ou quelle objection à préparer ?',
+      'Jarvis Expert':     'Workspace Jarvis chargé. Qu\'est-ce qui ne fonctionne pas ou doit être amélioré ?',
     };
     const base = welcomes[name] ?? 'Bonjour, je suis prêt. Quelle est ta demande ?';
     return clientName ? base.replace(/\.$/, '') + ctx : base;
@@ -235,9 +237,7 @@ function AgentsInner() {
         signal: abortRef.current.signal,
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error(`Erreur ${response.status}`);
-      }
+      if (!response.ok || !response.body) throw new Error(`Erreur ${response.status}`);
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -328,11 +328,10 @@ function AgentsInner() {
     doc.save(`lumi-${slug}-${new Date().toISOString().split('T')[0]}.pdf`);
   }
 
-  /* Compte total des agents actifs sur tous les pôles */
-  const totalActive = AGENTS_DATA.reduce(
-    (acc, p) => acc + p.agents.filter(a => !a.recruit).length,
-    0
-  );
+  const totalActive = AGENTS_DATA.reduce((acc, p) => acc + p.agents.filter(a => !a.recruit).length, 0);
+
+  // Tier widths — creates the pyramid taper (narrow at top, full at bottom)
+  const TIER_WIDTHS = ['600px', '840px', '100%'];
 
   return (
     <>
@@ -351,52 +350,166 @@ function AgentsInner() {
       </div>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Grille des agents */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-          {AGENTS_DATA.map((poleData) => (
-            <div key={poleData.pole} style={{ marginBottom: 32 }}>
-              {/* En-tête de pôle */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                marginBottom: 14,
-                paddingBottom: 10,
-                borderBottom: `1px solid ${poleData.color}33`,
-              }}>
-                <div style={{ width: 3, height: 16, borderRadius: 2, background: poleData.color }} />
-                <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: 12, fontWeight: 700, color: poleData.color, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  {poleData.pole}
-                </span>
-                <span style={{ fontSize: 11, color: 'var(--gray)' }}>
-                  — {poleData.agents.filter(a => !a.recruit).length} agents
-                </span>
-              </div>
+        {/* Pyramid */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '28px 28px 40px' }}>
 
-              {/* Cartes agents */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 12 }}>
-                {poleData.agents.map(a => (
-                  <AgentCard
-                    key={`${poleData.pole}-${a.firstName}-${a.n}`}
-                    agent={a}
-                    pole={poleData.pole}
-                    poleColor={poleData.color}
-                    isActive={activeAgent?.name === a.n}
-                    onClick={() => openAgent(a, poleData)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+          {/* Legend */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 28 }}>
+            {PYRAMID_TIERS.map((tier, i) => {
+              const poleColor = AGENTS_DATA.find(p => p.pole === tier.poleNames[0])?.color ?? '#0D9488';
+              return (
+                <div key={tier.level} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: `${poleColor}22`, border: `2px solid ${poleColor}66`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 800, color: poleColor, flexShrink: 0,
+                  }}>
+                    {tier.level}
+                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--gray)', fontWeight: 500 }}>{tier.label}</span>
+                  {i < PYRAMID_TIERS.length - 1 && (
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,.15)', marginLeft: 8 }}>→</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Pyramid tiers */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+            {PYRAMID_TIERS.map((tier, tierIdx) => {
+              const tierPoles = AGENTS_DATA.filter(p => tier.poleNames.includes(p.pole));
+              const tierAgentCount = tierPoles.reduce((s, p) => s + p.agents.filter(a => !a.recruit).length, 0);
+              const poleColor = tierPoles[0]?.color ?? '#0D9488';
+
+              return (
+                <div key={tier.level} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+                  {/* Tier card */}
+                  <div style={{
+                    width: TIER_WIDTHS[tierIdx],
+                    maxWidth: '100%',
+                    background: 'var(--night-2)',
+                    border: `1px solid ${poleColor}28`,
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                  }}>
+                    {/* Tier header */}
+                    <div style={{
+                      padding: '13px 20px',
+                      background: `${poleColor}0c`,
+                      borderBottom: `1px solid ${poleColor}1a`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                    }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        background: `${poleColor}22`, border: `2px solid ${poleColor}55`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 13, fontWeight: 800, color: poleColor, flexShrink: 0,
+                      }}>
+                        {tier.level}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 14 }}>
+                          {tier.label}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 3 }}>
+                          {tier.description}
+                        </div>
+                      </div>
+                      <div style={{
+                        fontSize: 11, fontWeight: 600,
+                        color: poleColor,
+                        background: `${poleColor}15`,
+                        padding: '3px 10px', borderRadius: 20,
+                        border: `1px solid ${poleColor}30`,
+                        flexShrink: 0,
+                      }}>
+                        {tierAgentCount} agents
+                      </div>
+                    </div>
+
+                    {/* Agents body */}
+                    <div style={{ padding: '16px 18px' }}>
+                      {tier.poleNames.length === 1 ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+                          {tierPoles[0].agents.map(a => (
+                            <AgentCard
+                              key={`${tierPoles[0].pole}-${a.firstName}`}
+                              agent={a}
+                              pole={tierPoles[0].pole}
+                              poleColor={tierPoles[0].color}
+                              isActive={activeAgent?.name === a.n}
+                              onClick={() => openAgent(a, tierPoles[0])}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                          {tierPoles.map(poleData => (
+                            <div key={poleData.pole}>
+                              <div style={{
+                                fontSize: 11, fontWeight: 700, color: poleData.color,
+                                textTransform: 'uppercase', letterSpacing: .8,
+                                marginBottom: 10,
+                                display: 'flex', alignItems: 'center', gap: 8,
+                              }}>
+                                <div style={{ width: 3, height: 12, borderRadius: 2, background: poleData.color, flexShrink: 0 }} />
+                                {poleData.pole}
+                                <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: 'var(--gray-dim)', fontSize: 10 }}>
+                                  — {poleData.agents.filter(a => !a.recruit).length} agents
+                                </span>
+                              </div>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+                                {poleData.agents.map(a => (
+                                  <AgentCard
+                                    key={`${poleData.pole}-${a.firstName}`}
+                                    agent={a}
+                                    pole={poleData.pole}
+                                    poleColor={poleData.color}
+                                    isActive={activeAgent?.name === a.n}
+                                    onClick={() => openAgent(a, poleData)}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Connector to next tier */}
+                  {tier.connector && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 0' }}>
+                      <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,.08)' }} />
+                      <div style={{
+                        fontSize: 10, color: 'var(--gray-dim)',
+                        background: 'var(--night-3)',
+                        padding: '3px 12px', borderRadius: 12,
+                        border: '1px solid rgba(255,255,255,.06)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        ↓ {tier.connector}
+                      </div>
+                      <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,.08)' }} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Panneau chat */}
+        {/* Chat panel */}
         {activeAgent && (
           <div style={{ width: 380, flexShrink: 0, borderLeft: '1px solid rgba(255,255,255,.06)', display: 'flex', flexDirection: 'column', background: 'var(--night-2)' }}>
-            {/* Header chat */}
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.06)', display: 'flex', alignItems: 'center', gap: 12 }}>
               <Image
-                src={dicebearUrl(activeAgent.firstName)}
+                src={dicebearUrl(activeAgent.firstName, activeAgent.sex)}
                 alt={activeAgent.firstName}
                 width={36}
                 height={36}
@@ -428,13 +541,11 @@ function AgentsInner() {
               </button>
             </div>
 
-            {/* Bandeau contexte client */}
             <div style={{
               padding: '8px 16px',
               background: activeClient ? `${activeClient.color}12` : 'rgba(13,148,136,.08)',
               borderBottom: '1px solid rgba(255,255,255,.04)',
-              fontSize: 12,
-              color: 'var(--gray)',
+              fontSize: 12, color: 'var(--gray)',
               borderLeft: activeClient ? `3px solid ${activeClient.color}` : '3px solid var(--teal)',
             }}>
               {activeClient ? (
@@ -448,7 +559,6 @@ function AgentsInner() {
               )}
             </div>
 
-            {/* Messages */}
             <div ref={messagesEl} style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {messages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
@@ -465,7 +575,6 @@ function AgentsInner() {
               ))}
             </div>
 
-            {/* Input */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,.06)', display: 'flex', gap: 8 }}>
               <textarea
                 value={input}
