@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation';
 import { supabase, TaskRow, ProjectRow, MilestoneRow } from '@/lib/supabase';
 import MissionSlideOver from '@/components/MissionSlideOver';
 import { SkeletonMetricCard, SkeletonListRow } from '@/components/Skeleton';
+import { AGENTS_DATA } from '@/lib/data';
+
+const DASHBOARD_AGENTS = AGENTS_DATA.flatMap(p => p.agents.map(a => ({ ...a, pole: p.pole }))).slice(0, 6);
 
 const MRR_OBJECTIF = 5000;
 
@@ -209,12 +212,12 @@ export default function Dashboard() {
               <button className="panel-action" onClick={() => router.push('/agents')}>Tout voir →</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, padding: 14 }}>
-              {[{ e: '🌐', n: 'Web Developer', p: 'Web & Tech' }, { e: '📱', n: 'Instagram', p: 'Contenu' }, { e: '🤝', n: 'Account Mgr', p: 'Client Success' }, { e: '🔍', n: 'SEO', p: 'Web & Tech' }, { e: '📊', n: 'Analytics', p: 'Client Success' }, { e: '💰', n: 'Finance', p: 'Opérations' }].map(a => (
+              {DASHBOARD_AGENTS.map(a => (
                 <div key={a.n} onClick={() => router.push('/agents')}
                   style={{ background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
                   <div className="agent-avatar-wrap" style={{ width: 36, height: 36, fontSize: 16 }}>{a.e}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>{a.n}</div>
-                  <div style={{ fontSize: 10, color: 'var(--gray-dim)' }}>{a.p}</div>
+                  <div style={{ fontSize: 10, color: 'var(--gray-dim)' }}>{a.pole}</div>
                 </div>
               ))}
             </div>
