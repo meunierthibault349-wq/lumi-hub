@@ -163,7 +163,7 @@ export default function ClientsPage() {
           </div>
           <div className="metric-card">
             <div className="metric-label">CA one-shot signé</div>
-            <div className="metric-val">{loading ? '…' : `${oneShotSigned.toLocaleString('fr-FR')} €`}</div>
+            <div className="metric-val" style={{ color: 'var(--amber)' }}>{loading ? '…' : `${oneShotSigned.toLocaleString('fr-FR')} €`}</div>
             <div className="metric-sub">projets livrés et signés</div>
           </div>
         </div>
