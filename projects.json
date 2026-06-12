@@ -42,8 +42,8 @@
             }
           ],
           "agents": [
-            "web-developer-lumi",
-            "mobile-web-developer"
+            "lumi-web-developer",
+            "lumi-mobile-web"
           ]
         },
         {
@@ -67,7 +67,7 @@
           "summary": "Calendrier éditorial Instagram juillet 2026 généré (13 posts). SEO local et GMB à démarrer.",
           "livrables": [],
           "agents": [
-            "instagram-content-strategist",
+            "lumi-instagram",
             "lumi-seo",
             "lumi-google-my-business"
           ]
@@ -184,9 +184,36 @@
             }
           ],
           "agents": [
-            "web-developer-lumi",
-            "mobile-web-developer",
+            "lumi-web-developer",
+            "lumi-mobile-web",
             "lumi-devis"
+          ]
+        },
+        {
+          "id": "PRJ-2026-006",
+          "title": "Pack Visibilité BeLoc — Abonnement mensuel",
+          "status": "en_cours",
+          "progress": 100,
+          "priority": "haute",
+          "devis": {
+            "ref": null,
+            "one_shot": null,
+            "abonnement": 890,
+            "statut": "signé",
+            "url": null
+          },
+          "dates": {
+            "start": "2026-06-08",
+            "deadline": null,
+            "delivered": null
+          },
+          "summary": "Pack Visibilité actif (890 €/mois) : stratégie digitale BeLoc — GMB, réseaux sociaux, SEO local. Facturation mensuelle récurrente.",
+          "livrables": [],
+          "agents": [
+            "lumi-instagram",
+            "lumi-google-my-business",
+            "lumi-seo",
+            "lumi-analytics"
           ]
         }
       ]
