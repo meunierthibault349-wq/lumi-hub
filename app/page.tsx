@@ -59,6 +59,15 @@ export default function Dashboard() {
   const topTasks = tasks.filter(t => !t.done).slice(0, 5);
   const mrrPct = mrrTotal > 0 ? Math.min(100, (mrrTotal / MRR_OBJECTIF) * 100).toFixed(1) : '0';
 
+  const oneShotPending = projects.reduce((sum, p) => {
+    if (!p.devis) return sum;
+    const match = p.devis.match(/^([\d\s]+)\s*€\s*one-shot/);
+    if (match && p.devis.includes('en_attente_signature')) {
+      return sum + parseInt(match[1].replace(/\s/g, ''), 10);
+    }
+    return sum;
+  }, 0);
+
   function daysUntil(dateStr: string): number {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return Math.ceil((new Date(dateStr).getTime() - today.getTime()) / 86400000);
@@ -94,6 +103,11 @@ export default function Dashboard() {
               <div className="metric-val" style={{ color: 'var(--teal-light)' }}>{mrrTotal.toLocaleString('fr-FR')} €</div>
               <div className="metric-sub">Objectif : {MRR_OBJECTIF.toLocaleString('fr-FR')} €/mois · {mrrPct}%</div>
               <div className="progress-bar" style={{ marginTop: 10 }}><div className="progress-fill" style={{ width: `${mrrPct}%` }} /></div>
+              {oneShotPending > 0 && (
+                <div style={{ marginTop: 8, fontSize: 11, color: 'var(--amber)', fontWeight: 600 }}>
+                  + {oneShotPending.toLocaleString('fr-FR')} € one-shot en attente
+                </div>
+              )}
             </div>
             <div className="metric-card">
               <div className="metric-label">Projets actifs</div>
