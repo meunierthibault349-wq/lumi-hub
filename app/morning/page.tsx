@@ -116,22 +116,22 @@ export default function MorningPage() {
             <div className="metric-label">MRR</div>
             <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: 'var(--teal-light)' }}>{loading ? '…' : `${mrrTotal} €`}</div>
             <div className="progress-bar" style={{ marginTop: 8 }}><div className="progress-fill" style={{ width: `${mrrPct}%` }} /></div>
-            <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>{mrrPct}% de {MRR_OBJECTIF} €</div>
+            <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 4 }}>{mrrPct}% de {MRR_OBJECTIF} €</div>
           </div>
           <div className="metric-card" style={{ padding: '14px 16px' }}>
             <div className="metric-label">Tâches urgentes</div>
             <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: topTasks.length > 0 ? '#f87171' : 'var(--mint)' }}>{loading ? '…' : topTasks.length}</div>
-            <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>priorité P7 ou plus</div>
+            <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 4 }}>priorité P7 ou plus</div>
           </div>
           <div className="metric-card" style={{ padding: '14px 16px' }}>
             <div className="metric-label">Jalons à risque</div>
             <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: urgentMilestones.length > 0 ? 'var(--amber)' : 'var(--mint)' }}>{loading ? '…' : urgentMilestones.length}</div>
-            <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>dans les 14 prochains jours</div>
+            <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 4 }}>dans les 14 prochains jours</div>
           </div>
           <div className="metric-card" style={{ padding: '14px 16px' }}>
             <div className="metric-label">Actions en suspens</div>
             <div style={{ fontFamily: 'var(--font-jakarta)', fontSize: 20, fontWeight: 700, color: 'var(--amber)' }}>{loading ? '…' : totalPending}</div>
-            <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 4 }}>sur tous les clients</div>
+            <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 4 }}>sur tous les clients</div>
           </div>
         </div>
 
@@ -260,7 +260,7 @@ export default function MorningPage() {
                   )}
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 600 }}>{a.n}</div>
-                    <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 1 }}>{a.reason}</div>
+                    <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 1 }}>{a.reason}</div>
                   </div>
                   <span style={{ fontSize: 11, color: 'var(--teal-light)' }}>Lancer ↗</span>
                 </div>

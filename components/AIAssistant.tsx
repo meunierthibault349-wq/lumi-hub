@@ -188,18 +188,18 @@ export default function AIAssistant() {
             }}>J</div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-jakarta)' }}>Jarvis</div>
-              <div style={{ fontSize: 11, color: 'var(--gray-dim)' }}>{pageLabel}</div>
+              <div style={{ fontSize: 11, color: 'var(--gray)' }}>{pageLabel}</div>
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
               {msgs.length > 0 && (
                 <button onClick={clear} title="Effacer" style={{
                   background: 'none', border: '1px solid rgba(255,255,255,.08)',
-                  borderRadius: 6, color: 'var(--gray-dim)', cursor: 'pointer',
+                  borderRadius: 6, color: 'var(--gray)', cursor: 'pointer',
                   padding: '4px 8px', fontSize: 11, fontFamily: 'inherit',
                   transition: 'all .12s',
                 }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.08)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray-dim)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.08)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; }}
                 >
                   Effacer
                 </button>
@@ -304,7 +304,7 @@ export default function AIAssistant() {
                 </svg>
               </button>
             </div>
-            <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginTop: 6, textAlign: 'center' }}>
+            <div style={{ fontSize: 10, color: 'var(--gray)', marginTop: 6, textAlign: 'center' }}>
               Entrée pour envoyer · Jarvis connaît le contexte de cette page
             </div>
           </div>

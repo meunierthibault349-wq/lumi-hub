@@ -141,7 +141,7 @@ export default function Dashboard() {
             </div>
             <div>
               {topTasks.map(t => (
-                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }} onClick={() => toggleTask(t.id)}>
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.07)', cursor: 'pointer' }} onClick={() => toggleTask(t.id)}>
                   <div className={`task-check${t.done ? ' done' : ''}`}>{t.done && <span style={{ color: 'white', fontSize: 10, fontWeight: 700 }}>✓</span>}</div>
                   <div style={{ flex: 1, fontSize: 13, color: t.done ? 'var(--gray-dim)' : 'var(--white)', textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</div>
                   <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--night-3)', color: 'var(--gray)', whiteSpace: 'nowrap' }}>{t.project}</span>
@@ -164,7 +164,7 @@ export default function Dashboard() {
             </div>
             <div>
               {activeMissions.map(m => (
-                <div key={m.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', cursor: 'pointer' }} onClick={() => setSelectedProject(m)}>
+                <div key={m.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.07)', cursor: 'pointer' }} onClick={() => setSelectedProject(m)}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: m.client_color, flexShrink: 0 }} />
                     <div style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>{m.title}</div>
@@ -202,7 +202,7 @@ export default function Dashboard() {
                 const bg = cls === 'days-urgent' ? 'rgba(239,68,68,.2)' : cls === 'days-warn' ? 'rgba(239,159,39,.2)' : 'rgba(93,202,165,.15)';
                 const col = cls === 'days-urgent' ? '#f87171' : cls === 'days-warn' ? 'var(--amber)' : 'var(--mint)';
                 return (
-                  <div key={j.id} style={{ display: 'flex', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.04)', alignItems: 'flex-start' }}>
+                  <div key={j.id} style={{ display: 'flex', gap: 12, padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.07)', alignItems: 'flex-start' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: j.client_color, marginTop: 4, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13 }}>{j.title}</div>
@@ -228,10 +228,10 @@ export default function Dashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, padding: 14 }}>
               {DASHBOARD_AGENTS.map(a => (
                 <div key={a.n} onClick={() => router.push('/agents')}
-                  style={{ background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 10, padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                  style={{ background: 'var(--night-3)', border: '1px solid rgba(255,255,255,.11)', borderRadius: 10, padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
                   <div className="agent-avatar-wrap" style={{ width: 36, height: 36, fontSize: 16 }}>{a.e}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, textAlign: 'center', lineHeight: 1.2 }}>{a.n}</div>
-                  <div style={{ fontSize: 10, color: 'var(--gray-dim)' }}>{a.pole}</div>
+                  <div style={{ fontSize: 10, color: 'var(--gray)' }}>{a.pole}</div>
                 </div>
               ))}
             </div>

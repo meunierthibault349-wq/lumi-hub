@@ -29,7 +29,7 @@ export function SkeletonTableRow({ cols = 5 }: { cols?: number }) {
       gridTemplateColumns: `16px 20px 1fr 110px 80px 60px 28px`,
       gap: 12,
       padding: '12px 18px',
-      borderTop: '1px solid rgba(255,255,255,.04)',
+      borderTop: '1px solid rgba(255,255,255,.07)',
       alignItems: 'center',
     }}>
       {widths.slice(0, cols).map((w, i) => (
@@ -43,7 +43,7 @@ export function SkeletonListRow() {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
-      padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,.04)',
+      padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,.07)',
     }}>
       <SkeletonLine w={16} h={16} radius={4} />
       <SkeletonLine w="50%" h={13} />
@@ -57,7 +57,7 @@ export function SkeletonChronoRow() {
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: '12px 1fr auto auto', gap: 12,
-      padding: '12px 18px', borderTop: '1px solid rgba(255,255,255,.04)', alignItems: 'center',
+      padding: '12px 18px', borderTop: '1px solid rgba(255,255,255,.07)', alignItems: 'center',
     }}>
       <SkeletonLine w={8} h={8} radius={99} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>

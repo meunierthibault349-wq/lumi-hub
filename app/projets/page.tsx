@@ -122,18 +122,18 @@ export default function ProjetsPage() {
               </div>
 
               <div style={{ background: 'var(--night-2)', border: '1px solid rgba(255,255,255,.06)', borderTop: 'none', borderRadius: '0 0 12px 12px', overflow: 'hidden' }}>
-                <div className="r-mhdr" style={{ display: 'grid', gridTemplateColumns: '1fr 130px 150px 110px 80px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+                <div className="r-mhdr" style={{ display: 'grid', gridTemplateColumns: '1fr 130px 150px 110px 80px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray)' }}>
                   <div>Mission</div><div>Statut</div><div>Progression</div><div>Devis</div><div>Deadline</div>
                 </div>
                 {clientProjects.map(p => (
                   <div key={p.id} onClick={() => setSelected(p)}
                     className="r-mr"
-                    style={{ display: 'grid', gridTemplateColumns: '1fr 130px 150px 110px 80px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', cursor: 'pointer', transition: 'background .1s' }}
+                    style={{ display: 'grid', gridTemplateColumns: '1fr 130px 150px 110px 80px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.07)', cursor: 'pointer', transition: 'background .1s' }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 500 }}>{p.title}</div>
-                      <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 2 }}>{p.ref}</div>
+                      <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 2 }}>{p.ref}</div>
                     </div>
                     <div><span className={`badge badge-${p.status}`}>{p.status.replace(/_/g, ' ')}</span></div>
                     <div className="r-mch" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

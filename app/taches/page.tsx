@@ -156,7 +156,7 @@ export default function TachesPage() {
         </div>
 
         <div className="panel">
-          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '16px 20px 1fr 110px 80px 60px 28px', gap: 12, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '16px 20px 1fr 110px 80px 60px 28px', gap: 12, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray)' }}>
             <div /><div /><div>Tâche</div><div>Projet</div><div>Échéance</div><div>Priorité</div><div />
           </div>
 
@@ -177,7 +177,7 @@ export default function TachesPage() {
                   gap: 12,
                   padding: '11px 18px',
                   alignItems: 'center',
-                  borderTop: isDragOver ? '2px solid var(--teal)' : '1px solid rgba(255,255,255,.04)',
+                  borderTop: isDragOver ? '2px solid var(--teal)' : '1px solid rgba(255,255,255,.07)',
                   background: isDragging ? 'rgba(13,148,136,.05)' : 'transparent',
                   opacity: isDragging ? 0.4 : 1,
                   transition: 'background .1s, border-color .1s, opacity .15s',

@@ -255,7 +255,7 @@ export default function FinancesPage() {
             </div>
           </div>
 
-          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px 60px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray-dim)' }}>
+          <div className="r-thdr" style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px 60px', gap: 16, padding: '10px 18px', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, color: 'var(--gray)' }}>
             <div>Description</div><div>Client</div><div>Montant</div><div>Statut</div><div></div>
           </div>
 
@@ -271,12 +271,12 @@ export default function FinancesPage() {
 
           {filtered.map(inv => (
             <div key={inv.id}
-              style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px 60px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 110px 60px', gap: 16, padding: '12px 18px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,.07)', transition: 'background .1s' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.03)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{inv.description}</div>
-                <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginTop: 2 }}>{inv.date} · {inv.id}</div>
+                <div style={{ fontSize: 11, color: 'var(--gray)', marginTop: 2 }}>{inv.date} · {inv.id}</div>
               </div>
               <div className="r-tch" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: inv.client_color, flexShrink: 0 }} />

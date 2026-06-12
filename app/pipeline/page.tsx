@@ -191,7 +191,7 @@ export default function PipelinePage() {
 
               {/* Statut */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Statut</div>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray)', marginBottom: 8 }}>Statut</div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {COLS.map(c => (
                     <button key={c.id} onClick={() => moveProspect(selected.id, c.id)}
@@ -204,10 +204,10 @@ export default function PipelinePage() {
 
               {/* Pack */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Pack estimé</div>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray)', marginBottom: 8 }}>Pack estimé</div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {(selected.tags ?? []).length === 0
-                    ? <span style={{ fontSize: 12, color: 'var(--gray-dim)' }}>Non défini</span>
+                    ? <span style={{ fontSize: 12, color: 'var(--gray)' }}>Non défini</span>
                     : (selected.tags ?? []).map(t => <span key={t} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 20, background: 'rgba(13,148,136,.1)', color: 'var(--teal-light)', border: '1px solid rgba(13,148,136,.2)' }}>{t}</span>)}
                 </div>
               </div>
@@ -222,7 +222,7 @@ export default function PipelinePage() {
 
               {/* Actions rapides */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Actions rapides</div>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray)', marginBottom: 8 }}>Actions rapides</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <a href={`/agents?client=${encodeURIComponent(selected.name)}`}
                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(26,34,53,0.55)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, textDecoration: 'none', color: 'var(--white)', fontSize: 13, cursor: 'pointer', transition: 'border-color .15s, background .15s' }}
@@ -245,7 +245,7 @@ export default function PipelinePage() {
 
               {/* Note rapide */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Note rapide</div>
+                <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray)', marginBottom: 8 }}>Note rapide</div>
                 <textarea
                   value={noteInput}
                   onChange={e => setNoteInput(e.target.value)}

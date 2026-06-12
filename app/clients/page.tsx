@@ -209,19 +209,19 @@ export default function ClientsPage() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', padding: '12px 20px', gap: 12 }}>
                   <div>
-                    <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Pack</div>
+                    <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: 3 }}>Pack</div>
                     <div style={{ fontSize: 12, fontWeight: 600 }}>{c.pack}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Missions actives</div>
+                    <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: 3 }}>Missions actives</div>
                     <div style={{ fontSize: 12, fontWeight: 600 }}>{activeProjects.length} / {clientProjects.length}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Contact</div>
+                    <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: 3 }}>Contact</div>
                     <div style={{ fontSize: 12, fontWeight: 600 }}>{c.contact}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 11, color: 'var(--gray-dim)', marginBottom: 3 }}>Dernier contact</div>
+                    <div style={{ fontSize: 11, color: 'var(--gray)', marginBottom: 3 }}>Dernier contact</div>
                     <div style={{ fontSize: 12, fontWeight: 600 }}>{c.last_contact}</div>
                   </div>
                 </div>
@@ -263,11 +263,11 @@ export default function ClientsPage() {
 
             <div style={{ padding: '10px 24px', background: 'var(--night-3)', borderBottom: '1px solid rgba(255,255,255,.04)', display: 'flex', gap: 20 }}>
               <div>
-                <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginBottom: 2 }}>CONTACT</div>
+                <div style={{ fontSize: 10, color: 'var(--gray)', marginBottom: 2 }}>CONTACT</div>
                 <div style={{ fontSize: 12, fontWeight: 600 }}>{selected.contact}</div>
               </div>
               <div>
-                <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginBottom: 2 }}>EMAIL</div>
+                <div style={{ fontSize: 10, color: 'var(--gray)', marginBottom: 2 }}>EMAIL</div>
                 {editEmail !== null ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -295,7 +295,7 @@ export default function ClientsPage() {
                 )}
               </div>
               <div style={{ marginLeft: 'auto' }}>
-                <div style={{ fontSize: 10, color: 'var(--gray-dim)', marginBottom: 2 }}>STATUT</div>
+                <div style={{ fontSize: 10, color: 'var(--gray)', marginBottom: 2 }}>STATUT</div>
                 <span style={{ fontSize: 11, fontWeight: 600, padding: '1px 8px', borderRadius: 20, background: STATUS_BG[selected.status], color: STATUS_COLOR[selected.status] }}>
                   {STATUS_LABEL[selected.status]}
                 </span>
@@ -308,7 +308,7 @@ export default function ClientsPage() {
                 Devis PDF
               </a>
               <a href={`/api/pdf/rapport?clientId=${selected.id}`} target="_blank" rel="noopener noreferrer"
-                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, background: 'rgba(255,255,255,.04)', color: 'var(--gray)', textDecoration: 'none', fontWeight: 600, border: '1px solid rgba(255,255,255,.08)', fontFamily: 'inherit' }}>
+                style={{ fontSize: 11, padding: '5px 12px', borderRadius: 6, background: 'rgba(255,255,255,.09)', color: 'var(--gray)', textDecoration: 'none', fontWeight: 600, border: '1px solid rgba(255,255,255,.13)', fontFamily: 'inherit' }}>
                 Rapport PDF
               </a>
             </div>
@@ -329,7 +329,7 @@ export default function ClientsPage() {
                 return (
                   <>
                     {clientProjects.map(p => (
-                      <div key={p.id} style={{ background: 'var(--night-3)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,.05)' }}>
+                      <div key={p.id} style={{ background: 'var(--night-3)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,.09)' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
                           <div style={{ fontSize: 13, fontWeight: 600 }}>{p.title}</div>
                           <span className={`badge badge-${p.status}`} style={{ flexShrink: 0, fontSize: 11 }}>{p.status.replace(/_/g, ' ')}</span>
@@ -340,7 +340,7 @@ export default function ClientsPage() {
                           </div>
                           <span style={{ fontSize: 12, color: 'var(--gray)', whiteSpace: 'nowrap' }}>{p.progress}%</span>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--gray-dim)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--gray)' }}>
                           <span>{p.ref}</span>
                           <span>{p.devis} · {p.deadline}</span>
                         </div>
@@ -386,7 +386,7 @@ export default function ClientsPage() {
                   ))}
                   {selected.vehicles && (
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray-dim)', marginBottom: 8 }}>Flotte</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .8, color: 'var(--gray)', marginBottom: 8 }}>Flotte</div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {selected.vehicles.map(v => (
                           <span key={v.model} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 20, background: 'var(--night-3)', color: 'var(--gray)', border: '1px solid rgba(255,255,255,.06)' }}>
