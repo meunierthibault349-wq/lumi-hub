@@ -1,4 +1,5 @@
 import { renderToBuffer } from '@react-pdf/renderer';
+import type { DocumentProps } from '@react-pdf/renderer';
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { FacturePDF } from '@/lib/pdf/templates';
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
     const client = clientRes.data as ClientRow | null;
 
     const element = React.createElement(FacturePDF, { invoice, client });
-    const buffer = await renderToBuffer(element as React.ReactElement);
+    const buffer = await renderToBuffer(element as unknown as React.ReactElement<DocumentProps>);
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {

@@ -223,7 +223,7 @@ export default function OrchestrerPage() {
                     onClick={() => handleSave(msg.text, activeMode, msg.imageUrl)}
                     style={{ padding: '5px 12px', borderRadius: 6, background: saved ? 'rgba(52,211,153,.12)' : 'rgba(0,210,200,.1)', border: `1px solid ${saved ? 'rgba(52,211,153,.3)' : 'rgba(0,210,200,.25)'}`, color: saved ? '#34d399' : 'var(--teal)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .2s' }}
                   >
-                    {saved ? '✓ Sauvegardé dans Livrables' : `💾 Sauvegarder · ${livrable.type}`}
+                    {saved ? '✓ Sauvegardé — validez dans /livrables pour l\'envoyer au client' : `💾 Sauvegarder · ${livrable.type}`}
                   </button>
                   {(msg.text.includes('🎨 BRIEF VISUEL') || extractImagePrompt(msg.text)) && (
                     <button

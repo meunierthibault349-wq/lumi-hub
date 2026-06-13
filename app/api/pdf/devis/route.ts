@@ -1,4 +1,5 @@
 import { renderToBuffer } from '@react-pdf/renderer';
+import type { DocumentProps } from '@react-pdf/renderer';
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { DevisPDF } from '@/lib/pdf/templates';
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     if (!client) return NextResponse.json({ error: 'Client introuvable' }, { status: 404 });
 
     const element = React.createElement(DevisPDF, { client, projects });
-    const buffer = await renderToBuffer(element as React.ReactElement);
+    const buffer = await renderToBuffer(element as unknown as React.ReactElement<DocumentProps>);
 
     const slug = client.name.toLowerCase().replace(/\s+/g, '-');
     return new NextResponse(new Uint8Array(buffer), {

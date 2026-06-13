@@ -249,12 +249,12 @@ export default function LivrablesPage() {
                         </button>
                         {liv.status === 'brouillon' && (
                           <button onClick={() => updateStatus(liv.id, 'validé')} style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(52,211,153,.1)', border: '1px solid rgba(52,211,153,.25)', color: '#34d399', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-                            Valider
+                            ✓ Valider
                           </button>
                         )}
                         {liv.status === 'validé' && (
-                          <button onClick={() => updateStatus(liv.id, 'livré')} style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(13,148,136,.1)', border: '1px solid rgba(13,148,136,.25)', color: 'var(--teal)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-                            Marquer livré
+                          <button onClick={() => updateStatus(liv.id, 'livré')} title="Rend visible dans le portail client" style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(13,148,136,.1)', border: '1px solid rgba(13,148,136,.25)', color: 'var(--teal)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+                            📤 Envoyer au client
                           </button>
                         )}
                         <button onClick={() => deleteLivrable(liv.id)} style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(248,113,113,.08)', border: '1px solid rgba(248,113,113,.2)', color: '#f87171', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
