@@ -901,37 +901,12 @@ export default function VitrinePage() {
             <div className="section-head" data-reveal="">
               <span className="eyebrow">Résultats terrain</span>
               <h2>Des chiffres, pas des promesses.</h2>
-              <p>Tous les résultats ci-dessous sont issus de missions réelles.</p>
             </div>
             <div className="kpi-row">
               <div className="kpi" data-reveal=""><strong>+5h</strong><span>libérées par semaine dès le mois 1</span></div>
               <div className="kpi" data-reveal="" style={{ ['--d' as string]: '90ms' }}><strong>×3</strong><span>de visibilité locale en moins de 90 jours</span></div>
               <div className="kpi" data-reveal="" style={{ ['--d' as string]: '180ms' }}><strong>+23</strong><span>nouvelles demandes le 1ᵉʳ mois — vs 0 avant</span></div>
               <div className="kpi" data-reveal="" style={{ ['--d' as string]: '270ms' }}><strong>14 j</strong><span>pour les premiers résultats mesurables</span></div>
-            </div>
-            <div className="results">
-              <div className="result" data-reveal="">
-                <div className="result__client">
-                  <span className="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                  <div><div className="name">Fleuriste — Lyon</div><div className="sec">Site vitrine + SEO local</div></div>
-                </div>
-                <ul className="result__list">
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>23 demandes</b> de contact le 1ᵉʳ mois (vs 0 avant le nouveau site)</span></li>
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>Page 1 Google Maps</b> sur « fleuriste Lyon » dès la 6ᵉ semaine</span></li>
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt">Chargement <b>7 s → 1,8 s</b> — site <b>3,9× plus rapide</b></span></li>
-                </ul>
-              </div>
-              <div className="result" data-reveal="" style={{ ['--d' as string]: '120ms' }}>
-                <div className="result__client">
-                  <span className="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                  <div><div className="name">Cabinet RH — Lyon</div><div className="sec">Stratégie Social Media · 90 jours</div></div>
-                </div>
-                <ul className="result__list">
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>+4 200 impressions</b> / mois sur LinkedIn — audience <b>×4 en 60 jours</b></span></li>
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>11 leads qualifiés</b> en 90 jours — 0 budget pub</span></li>
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>3 contrats signés</b> directement attribuables aux contenus</span></li>
-                </ul>
-              </div>
             </div>
           </div>
         </section>
