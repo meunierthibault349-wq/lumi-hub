@@ -98,7 +98,6 @@ export default function Sidebar() {
   const router = useRouter();
   const { activeClient, setActiveClient } = useClientContext();
   const [counts, setCounts] = useState<BadgeCounts>({ tasks: 0, projects: 0, clients: 0, pipeline: 0, mrr: 0 });
-  const [expanded, setExpanded] = useState(false);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -118,7 +117,7 @@ export default function Sidebar() {
       });
     supabase.from('prospects').select('id', { count: 'exact', head: true }).eq('stage', 'chaud')
       .then(({ count }) => setCounts(p => ({ ...p, pipeline: count ?? 0 })));
-  }, []);
+  }, [pathname]);
 
   function getBadge(item: typeof NAV_GROUPS[0]['items'][0]): { text: string; cls: string } | null {
     if ('staticBadge' in item && item.staticBadge) return item.staticBadge;
@@ -129,51 +128,36 @@ export default function Sidebar() {
     return v > 0 ? { text: String(v), cls: '' } : null;
   }
 
-  const fadeLabel: React.CSSProperties = {
-    opacity: expanded ? 1 : 0,
-    maxWidth: expanded ? '160px' : '0px',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    transition: `opacity 0.18s ${expanded ? '0.06s' : '0s'}, max-width 0.25s`,
-    flexShrink: 0,
-  };
-
   return (
     <aside
       className="sidebar"
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
       style={{
         position: 'fixed',
         left: 0, top: 0,
         height: '100vh',
-        width: expanded ? 220 : 64,
-        transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
+        width: 220,
         zIndex: 50,
-        background: 'rgba(7,12,22,0.92)',
+        background: 'rgba(7,12,22,0.95)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         borderRight: '1px solid rgba(255,255,255,.07)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        boxShadow: expanded ? '4px 0 32px rgba(0,0,0,.5)' : '2px 0 12px rgba(0,0,0,.3)',
+        boxShadow: '2px 0 24px rgba(0,0,0,.4)',
       }}
     >
       {/* Logo */}
       <div style={{
-        padding: '18px 0 14px',
-        paddingLeft: expanded ? 18 : 0,
-        transition: 'padding-left 0.25s',
+        padding: '18px 18px 14px',
         borderBottom: '1px solid rgba(255,255,255,.06)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: expanded ? 'flex-start' : 'center',
         gap: 10,
         flexShrink: 0,
       }}>
         <div className="logo-icon"><span>L</span></div>
-        <div style={{ ...fadeLabel, maxWidth: expanded ? '160px' : '0px' }}>
+        <div>
           <div className="logo-wordmark">LUMI HUB</div>
           <span className="logo-sub">Cabinet de conseil</span>
         </div>
@@ -183,18 +167,7 @@ export default function Sidebar() {
       <div style={{ padding: '10px 8px 8px', flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         {NAV_GROUPS.map((group, gi) => (
           <div key={group.label} style={{ marginBottom: gi < NAV_GROUPS.length - 1 ? 4 : 0 }}>
-            {/* Section label — fades in with sidebar */}
-            <div
-              className="section-label"
-              style={{
-                marginTop: expanded && gi > 0 ? 12 : 0,
-                marginBottom: expanded ? 6 : 0,
-                maxHeight: expanded ? 20 : 0,
-                overflow: 'hidden',
-                opacity: expanded ? 1 : 0,
-                transition: 'opacity 0.18s, max-height 0.25s, margin 0.25s',
-              }}
-            >
+            <div className="section-label" style={{ marginTop: gi > 0 ? 12 : 0, marginBottom: 6 }}>
               {group.label}
             </div>
 
@@ -205,67 +178,44 @@ export default function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  title={!expanded ? item.label : undefined}
                   className={`nav-link${isActive ? ' active' : ''}`}
                   onMouseEnter={() => router.prefetch(item.href)}
-                  style={{
-                    justifyContent: expanded ? 'flex-start' : 'center',
-                    gap: expanded ? 10 : 0,
-                    padding: expanded ? '9px 12px' : '10px 0',
-                    transition: 'background 0.15s, color 0.15s, border-color 0.15s, padding 0.25s, gap 0.25s',
-                    position: 'relative',
-                  }}
+                  style={{ justifyContent: 'flex-start', gap: 10, padding: '9px 12px', position: 'relative' }}
                 >
                   <span style={{ flexShrink: 0 }}>{item.icon}</span>
-                  <span style={fadeLabel}>{item.label}</span>
-                  {expanded && badge && <span className={`nav-badge ${badge.cls}`}>{badge.text}</span>}
-                  {!expanded && badge && (
-                    <span style={{
-                      position: 'absolute', top: 6, right: 9,
-                      width: 7, height: 7, borderRadius: '50%',
-                      background: badge.cls === 'red' ? 'var(--red)' : 'var(--teal-light)',
-                      boxShadow: `0 0 5px ${badge.cls === 'red' ? 'var(--red)' : 'var(--teal)'}`,
-                    }} />
-                  )}
+                  <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                  {badge && <span className={`nav-badge ${badge.cls}`}>{badge.text}</span>}
                 </Link>
               );
             })}
           </div>
         ))}
 
-        {/* Client context — hidden when collapsed */}
-        <div style={{
-          marginTop: 0,
-          maxHeight: expanded ? '200px' : '0px',
-          opacity: expanded ? 1 : 0,
-          overflow: 'hidden',
-          transition: 'opacity 0.18s, max-height 0.3s',
-        }}>
-          <div style={{ paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.06)', marginTop: 12 }}>
-            <div className="section-label" style={{ marginBottom: 8 }}>Contexte client</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {Object.values(CLIENT_CONTEXTS).map(c => {
-                const isActive = activeClient?.ref === c.ref;
-                return (
-                  <button
-                    key={c.ref}
-                    onClick={() => setActiveClient(isActive ? null : c)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 7,
-                      border: `1px solid ${isActive ? c.color + '55' : 'rgba(255,255,255,.06)'}`,
-                      background: isActive ? c.color + '15' : 'transparent',
-                      color: isActive ? c.color : 'var(--gray)',
-                      fontSize: 12, fontWeight: isActive ? 600 : 400, cursor: 'pointer',
-                      fontFamily: 'inherit', textAlign: 'left', width: '100%', transition: 'all .15s',
-                    }}
-                  >
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: isActive ? c.color : 'rgba(255,255,255,.2)', flexShrink: 0 }} />
-                    {c.name}
-                    {isActive && <span style={{ marginLeft: 'auto', fontSize: 11 }}>actif</span>}
-                  </button>
-                );
-              })}
-            </div>
+        {/* Client context */}
+        <div style={{ paddingTop: 12, borderTop: '1px solid rgba(255,255,255,.06)', marginTop: 12 }}>
+          <div className="section-label" style={{ marginBottom: 8 }}>Contexte client</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {Object.values(CLIENT_CONTEXTS).map(c => {
+              const isActive = activeClient?.ref === c.ref;
+              return (
+                <button
+                  key={c.ref}
+                  onClick={() => setActiveClient(isActive ? null : c)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 7,
+                    border: `1px solid ${isActive ? c.color + '55' : 'rgba(255,255,255,.06)'}`,
+                    background: isActive ? c.color + '15' : 'transparent',
+                    color: isActive ? c.color : 'var(--gray)',
+                    fontSize: 12, fontWeight: isActive ? 600 : 400, cursor: 'pointer',
+                    fontFamily: 'inherit', textAlign: 'left', width: '100%', transition: 'all .15s',
+                  }}
+                >
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: isActive ? c.color : 'rgba(255,255,255,.2)', flexShrink: 0 }} />
+                  {c.name}
+                  {isActive && <span style={{ marginLeft: 'auto', fontSize: 11 }}>actif</span>}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -276,33 +226,23 @@ export default function Sidebar() {
         borderTop: '1px solid rgba(255,255,255,.06)',
         display: 'flex',
         alignItems: 'center',
-        gap: expanded ? 10 : 0,
-        justifyContent: expanded ? 'flex-start' : 'center',
-        padding: expanded ? '14px 12px' : '14px 0',
-        transition: 'padding 0.25s, gap 0.25s',
+        gap: 10,
+        padding: '14px 12px',
       }}>
         <div className="avatar" style={{ flexShrink: 0 }}>T</div>
-        <div style={{ ...fadeLabel, maxWidth: expanded ? '100px' : '0px', flex: expanded ? 1 : undefined }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--white)' }}>Thibault</div>
           <div style={{ fontSize: 11, color: 'var(--gray-dim)' }}>CEO — Lumi</div>
         </div>
-        <div style={{
-          opacity: expanded ? 1 : 0,
-          maxWidth: expanded ? '28px' : '0px',
-          overflow: 'hidden',
-          transition: `opacity 0.18s ${expanded ? '0.1s' : '0s'}, max-width 0.25s`,
-          flexShrink: 0,
-        }}>
-          <button
-            onClick={handleSignOut}
-            title="Se déconnecter"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-dim)', padding: 4, borderRadius: 6, display: 'flex', alignItems: 'center', transition: 'color .15s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--gray-dim)')}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          </button>
-        </div>
+        <button
+          onClick={handleSignOut}
+          title="Se déconnecter"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-dim)', padding: 4, borderRadius: 6, display: 'flex', alignItems: 'center', transition: 'color .15s', flexShrink: 0 }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#f87171')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--gray-dim)')}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
       </div>
     </aside>
   );

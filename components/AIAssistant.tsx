@@ -37,6 +37,127 @@ function TypingDots() {
   );
 }
 
+function MarkdownLine({ text }: { text: string }) {
+  const parts: React.ReactNode[] = [];
+  const regex = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
+  let last = 0, i = 0;
+  let m: RegExpExecArray | null;
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const token = m[0];
+    if (token.startsWith('`')) {
+      parts.push(
+        <code key={i++} style={{
+          background: 'rgba(255,255,255,.1)', borderRadius: 4,
+          padding: '1px 5px', fontSize: '0.88em',
+          fontFamily: 'ui-monospace, monospace', color: 'var(--teal-light)',
+        }}>{token.slice(1, -1)}</code>
+      );
+    } else if (token.startsWith('**')) {
+      parts.push(<strong key={i++} style={{ color: 'var(--white)', fontWeight: 600 }}>{token.slice(2, -2)}</strong>);
+    } else {
+      parts.push(<em key={i++} style={{ fontStyle: 'italic', color: 'rgba(248,255,254,.7)' }}>{token.slice(1, -1)}</em>);
+    }
+    last = m.index + token.length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <>{parts}</>;
+}
+
+function Markdown({ content }: { content: string }) {
+  const lines = content.split('\n');
+  const nodes: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (!line.trim()) { nodes.push(<div key={i} style={{ height: 6 }} />); i++; continue; }
+
+    if (/^#{1,3} /.test(line)) {
+      const lvl = line.match(/^(#+)/)?.[1].length ?? 1;
+      const txt = line.replace(/^#+\s/, '');
+      const sizes = [16, 14, 13];
+      nodes.push(
+        <div key={i} style={{ fontWeight: 700, fontSize: sizes[lvl - 1] ?? 13, color: 'var(--white)', margin: '10px 0 4px' }}>
+          <MarkdownLine text={txt} />
+        </div>
+      );
+      i++; continue;
+    }
+
+    if (/^[-*] /.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-*] /.test(lines[i])) {
+        items.push(lines[i].replace(/^[-*] /, ''));
+        i++;
+      }
+      nodes.push(
+        <ul key={`ul-${i}`} style={{ margin: '4px 0', paddingLeft: 16, listStyleType: 'none' }}>
+          {items.map((it, j) => (
+            <li key={j} style={{ display: 'flex', gap: 7, marginBottom: 3, alignItems: 'flex-start' }}>
+              <span style={{ color: 'var(--teal-light)', marginTop: 2, flexShrink: 0, fontSize: 10 }}>▸</span>
+              <span><MarkdownLine text={it} /></span>
+            </li>
+          ))}
+        </ul>
+      );
+      continue;
+    }
+
+    if (/^\d+\. /.test(line)) {
+      const items: string[] = [];
+      let n = 1;
+      while (i < lines.length && /^\d+\. /.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+\. /, ''));
+        i++;
+      }
+      nodes.push(
+        <ol key={`ol-${i}`} style={{ margin: '4px 0', paddingLeft: 0, listStyleType: 'none' }}>
+          {items.map((it, j) => (
+            <li key={j} style={{ display: 'flex', gap: 8, marginBottom: 3, alignItems: 'flex-start' }}>
+              <span style={{ color: 'var(--teal-light)', fontVariantNumeric: 'tabular-nums', fontSize: 11, minWidth: 14, marginTop: 1, flexShrink: 0 }}>{n++ + j}.</span>
+              <span><MarkdownLine text={it} /></span>
+            </li>
+          ))}
+        </ol>
+      );
+      continue;
+    }
+
+    if (line.startsWith('```')) {
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith('```')) { codeLines.push(lines[i]); i++; }
+      i++;
+      nodes.push(
+        <pre key={`code-${i}`} style={{
+          background: 'rgba(0,0,0,.4)', borderRadius: 8,
+          padding: '10px 12px', margin: '6px 0',
+          fontSize: 11.5, fontFamily: 'ui-monospace, monospace',
+          color: 'var(--teal-light)', overflowX: 'auto',
+          border: '1px solid rgba(255,255,255,.07)',
+        }}>{codeLines.join('\n')}</pre>
+      );
+      continue;
+    }
+
+    if (/^---+$/.test(line.trim())) {
+      nodes.push(<hr key={i} style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.1)', margin: '10px 0' }} />);
+      i++; continue;
+    }
+
+    nodes.push(
+      <p key={i} style={{ margin: 0, marginBottom: 2, lineHeight: 1.65 }}>
+        <MarkdownLine text={line} />
+      </p>
+    );
+    i++;
+  }
+
+  return <div>{nodes}</div>;
+}
+
 export default function AIAssistant() {
   const [open, setOpen]       = useState(false);
   const [msgs, setMsgs]       = useState<Msg[]>([]);
@@ -58,7 +179,6 @@ export default function AIAssistant() {
     if (open) setTimeout(() => inputRef.current?.focus(), 150);
   }, [open]);
 
-  // Reset on page change
   useEffect(() => { setMsgs([]); }, [pathname]);
 
   const send = useCallback(async (text?: string) => {
@@ -128,9 +248,12 @@ export default function AIAssistant() {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        .ai-msg-scroll::-webkit-scrollbar { width: 4px; }
+        .ai-msg-scroll::-webkit-scrollbar-track { background: transparent; }
+        .ai-msg-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
       `}</style>
 
-      {/* ── Floating button ── */}
+      {/* Floating button */}
       <button
         onClick={() => setOpen(p => !p)}
         title="Jarvis AI"
@@ -162,12 +285,12 @@ export default function AIAssistant() {
         )}
       </button>
 
-      {/* ── Panel ── */}
+      {/* Panel */}
       {open && (
         <div style={{
-          position: 'fixed', right: 0, top: 0, bottom: 0, width: 400,
+          position: 'fixed', right: 0, top: 0, bottom: 0, width: 420,
           zIndex: 690,
-          background: 'rgba(9,14,26,0.97)',
+          background: 'rgba(8,13,24,0.98)',
           backdropFilter: 'blur(24px)',
           borderLeft: '1px solid rgba(255,255,255,.08)',
           display: 'flex', flexDirection: 'column',
@@ -177,29 +300,32 @@ export default function AIAssistant() {
 
           {/* Header */}
           <div style={{
-            padding: '16px 18px', borderBottom: '1px solid rgba(255,255,255,.07)',
+            padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,.07)',
             display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
           }}>
             <div style={{
-              width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+              width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
               background: 'linear-gradient(135deg,#0D9488,#5DCAA5)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, fontWeight: 800, fontFamily: 'var(--font-jakarta)',
+              fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-jakarta)',
             }}>J</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-jakarta)' }}>Jarvis</div>
-              <div style={{ fontSize: 11, color: 'var(--gray)' }}>{pageLabel}</div>
+              <div style={{ fontWeight: 700, fontSize: 14, fontFamily: 'var(--font-jakarta)', color: 'var(--white)' }}>Jarvis</div>
+              <div style={{ fontSize: 11, color: 'var(--gray)' }}>
+                {pageLabel}
+                <span style={{ marginLeft: 6, color: 'rgba(13,148,136,.8)', fontSize: 10 }}>Sonnet</span>
+              </div>
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
               {msgs.length > 0 && (
-                <button onClick={clear} title="Effacer" style={{
-                  background: 'none', border: '1px solid rgba(255,255,255,.08)',
+                <button onClick={clear} style={{
+                  background: 'none', border: '1px solid rgba(255,255,255,.1)',
                   borderRadius: 6, color: 'var(--gray)', cursor: 'pointer',
-                  padding: '4px 8px', fontSize: 11, fontFamily: 'inherit',
+                  padding: '4px 9px', fontSize: 11, fontFamily: 'inherit',
                   transition: 'all .12s',
                 }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.08)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--white)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.1)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; }}
                 >
                   Effacer
                 </button>
@@ -208,22 +334,24 @@ export default function AIAssistant() {
           </div>
 
           {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 8px' }}>
+          <div className="ai-msg-scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 8px' }}>
             {msgs.length === 0 && (
-              <div style={{ paddingTop: 20 }}>
-                <div style={{ fontSize: 13, color: 'var(--gray)', marginBottom: 16, lineHeight: 1.6 }}>
-                  Bonjour Thibault, je suis sur la page <strong style={{ color: 'var(--teal-light)' }}>{pageLabel}</strong>. Comment puis-je t'aider ?
+              <div style={{ paddingTop: 16 }}>
+                <div style={{ fontSize: 13, color: 'var(--gray)', marginBottom: 14, lineHeight: 1.6 }}>
+                  Bonjour Thibault, je suis sur{' '}
+                  <strong style={{ color: 'var(--teal-light)' }}>{pageLabel}</strong>.
+                  Comment puis-je t&apos;aider ?
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {suggestions.map((s, i) => (
                     <button key={i} onClick={() => send(s)} style={{
-                      textAlign: 'left', padding: '9px 12px', borderRadius: 8,
-                      background: 'rgba(13,148,136,.07)', border: '1px solid rgba(13,148,136,.15)',
+                      textAlign: 'left', padding: '10px 13px', borderRadius: 9,
+                      background: 'rgba(13,148,136,.06)', border: '1px solid rgba(13,148,136,.14)',
                       color: 'var(--gray)', fontSize: 13, cursor: 'pointer',
                       fontFamily: 'inherit', lineHeight: 1.4, transition: 'all .12s',
                     }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(13,148,136,.14)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--white)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(13,148,136,.07)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(13,148,136,.13)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--white)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(13,148,136,.3)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(13,148,136,.06)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--gray)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(13,148,136,.14)'; }}
                     >
                       {s}
                     </button>
@@ -235,25 +363,41 @@ export default function AIAssistant() {
             {msgs.map((m, i) => (
               <div key={i} style={{
                 display: 'flex',
-                justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
-                marginBottom: 10,
+                flexDirection: 'column',
+                alignItems: m.role === 'user' ? 'flex-end' : 'flex-start',
+                marginBottom: 12,
                 animation: 'msgIn 0.15s ease',
               }}>
+                {m.role === 'assistant' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%',
+                      background: 'linear-gradient(135deg,#0D9488,#5DCAA5)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 9, fontWeight: 800, color: 'white', flexShrink: 0,
+                    }}>J</div>
+                    <span style={{ fontSize: 11, color: 'var(--gray)', fontWeight: 500 }}>Jarvis</span>
+                  </div>
+                )}
                 <div style={{
-                  maxWidth: '84%',
-                  padding: '10px 13px',
-                  borderRadius: m.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                  maxWidth: '88%',
+                  padding: m.role === 'user' ? '9px 14px' : '12px 15px',
+                  borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '4px 16px 16px 16px',
                   background: m.role === 'user'
-                    ? 'rgba(13,148,136,.2)'
-                    : 'rgba(255,255,255,.05)',
+                    ? 'linear-gradient(135deg, rgba(13,148,136,.25), rgba(13,148,136,.15))'
+                    : 'rgba(255,255,255,.04)',
                   border: m.role === 'user'
-                    ? '1px solid rgba(13,148,136,.3)'
+                    ? '1px solid rgba(13,148,136,.35)'
                     : '1px solid rgba(255,255,255,.07)',
-                  fontSize: 13, lineHeight: 1.65,
-                  color: m.role === 'user' ? 'var(--white)' : 'rgba(248,255,254,.88)',
-                  whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                  fontSize: 13.5,
+                  color: m.role === 'user' ? 'var(--white)' : 'rgba(245,255,253,.9)',
                 }}>
-                  {m.content === '' && m.role === 'assistant' ? <TypingDots /> : m.content}
+                  {m.content === '' && m.role === 'assistant'
+                    ? <TypingDots />
+                    : m.role === 'user'
+                      ? <span style={{ lineHeight: 1.5 }}>{m.content}</span>
+                      : <Markdown content={m.content} />
+                  }
                 </div>
               </div>
             ))}
@@ -262,17 +406,23 @@ export default function AIAssistant() {
 
           {/* Input */}
           <div style={{
-            padding: '12px 14px 16px',
+            padding: '10px 14px 14px',
             borderTop: '1px solid rgba(255,255,255,.07)',
             flexShrink: 0,
           }}>
+            {streaming && (
+              <div style={{ fontSize: 11, color: 'var(--teal-light)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <TypingDots />
+                <span style={{ marginLeft: 2 }}>Jarvis réfléchit…</span>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <input
                 ref={inputRef}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKey}
-                placeholder="Message…"
+                placeholder="Message à Jarvis…"
                 disabled={streaming}
                 style={{
                   flex: 1, padding: '10px 14px',
@@ -280,9 +430,9 @@ export default function AIAssistant() {
                   border: '1px solid rgba(255,255,255,.1)',
                   borderRadius: 10, color: 'var(--white)',
                   fontSize: 13, fontFamily: 'inherit',
-                  outline: 'none', resize: 'none',
+                  outline: 'none',
                   transition: 'border-color .15s',
-                  opacity: streaming ? 0.6 : 1,
+                  opacity: streaming ? 0.5 : 1,
                 }}
                 onFocus={e => (e.currentTarget.style.borderColor = 'rgba(13,148,136,.5)')}
                 onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)')}
@@ -291,11 +441,15 @@ export default function AIAssistant() {
                 onClick={() => send()}
                 disabled={!input.trim() || streaming}
                 style={{
-                  width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                  background: input.trim() && !streaming ? 'var(--teal)' : 'rgba(255,255,255,.06)',
-                  border: 'none', color: 'white', cursor: input.trim() && !streaming ? 'pointer' : 'default',
+                  width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                  background: input.trim() && !streaming
+                    ? 'linear-gradient(135deg,#0D9488,#5DCAA5)'
+                    : 'rgba(255,255,255,.06)',
+                  border: 'none', color: 'white',
+                  cursor: input.trim() && !streaming ? 'pointer' : 'default',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'background .15s',
+                  transition: 'all .15s',
+                  boxShadow: input.trim() && !streaming ? '0 2px 12px rgba(13,148,136,.35)' : 'none',
                 }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -304,8 +458,8 @@ export default function AIAssistant() {
                 </svg>
               </button>
             </div>
-            <div style={{ fontSize: 10, color: 'var(--gray)', marginTop: 6, textAlign: 'center' }}>
-              Entrée pour envoyer · Jarvis connaît le contexte de cette page
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.2)', marginTop: 6, textAlign: 'center' }}>
+              Entrée pour envoyer · Shift+Entrée pour saut de ligne
             </div>
           </div>
         </div>
