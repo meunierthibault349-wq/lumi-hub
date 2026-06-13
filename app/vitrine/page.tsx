@@ -141,9 +141,9 @@ export default function VitrinePage() {
                     <a className="btn btn--ghost btn--lg" href="#methode">Notre méthode</a>
                   </div>
                   <div className="hero__meta" data-reveal="" style={{ ['--d' as string]: '320ms' }}>
-                    <div className="stat"><strong>~5h<span style={{ fontSize: '15px', color: 'var(--text-dim)' }}>/sem.</span></strong><span>économisées dès le mois 1</span></div>
-                    <div className="stat"><strong>2–4 sem.</strong><span>pour un site en ligne</span></div>
-                    <div className="stat"><strong>1 seul</strong><span>interlocuteur, 3 expertises</span></div>
+                    <div className="stat"><strong>+5h<span style={{ fontSize: '15px', color: 'var(--text-dim)' }}>/sem.</span></strong><span>récupérées dès le mois 1</span></div>
+                    <div className="stat"><strong>14 jours</strong><span>pour un site en ligne</span></div>
+                    <div className="stat"><strong>0</strong><span>sous-traitant, 1 interlocuteur</span></div>
                   </div>
                 </div>
 
@@ -904,10 +904,10 @@ export default function VitrinePage() {
               <p>Tous les résultats ci-dessous sont issus de missions réelles.</p>
             </div>
             <div className="kpi-row">
-              <div className="kpi" data-reveal=""><strong>~5h</strong><span>économisées / semaine dès le mois 1</span></div>
-              <div className="kpi" data-reveal="" style={{ ['--d' as string]: '90ms' }}><strong>−35%</strong><span>de no-shows avec les rappels auto</span></div>
-              <div className="kpi" data-reveal="" style={{ ['--d' as string]: '180ms' }}><strong>+23</strong><span>demandes de contact le 1ᵉʳ mois</span></div>
-              <div className="kpi" data-reveal="" style={{ ['--d' as string]: '270ms' }}><strong>1</strong><span>interlocuteur, du brief à la livraison</span></div>
+              <div className="kpi" data-reveal=""><strong>+5h</strong><span>libérées par semaine dès le mois 1</span></div>
+              <div className="kpi" data-reveal="" style={{ ['--d' as string]: '90ms' }}><strong>×3</strong><span>de visibilité locale en moins de 90 jours</span></div>
+              <div className="kpi" data-reveal="" style={{ ['--d' as string]: '180ms' }}><strong>+23</strong><span>nouvelles demandes le 1ᵉʳ mois — vs 0 avant</span></div>
+              <div className="kpi" data-reveal="" style={{ ['--d' as string]: '270ms' }}><strong>14 j</strong><span>pour les premiers résultats mesurables</span></div>
             </div>
             <div className="results">
               <div className="result" data-reveal="">
@@ -918,7 +918,7 @@ export default function VitrinePage() {
                 <ul className="result__list">
                   <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>23 demandes</b> de contact le 1ᵉʳ mois (vs 0 avant le nouveau site)</span></li>
                   <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>Page 1 Google Maps</b> sur « fleuriste Lyon » dès la 6ᵉ semaine</span></li>
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt">Chargement <b>7 s → 1,8 s</b> après optimisation</span></li>
+                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt">Chargement <b>7 s → 1,8 s</b> — site <b>3,9× plus rapide</b></span></li>
                 </ul>
               </div>
               <div className="result" data-reveal="" style={{ ['--d' as string]: '120ms' }}>
@@ -927,9 +927,9 @@ export default function VitrinePage() {
                   <div><div className="name">Cabinet RH — Lyon</div><div className="sec">Stratégie Social Media · 90 jours</div></div>
                 </div>
                 <ul className="result__list">
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>+4 200 impressions</b> / mois sur LinkedIn dès le 2ᵉ mois</span></li>
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>11 leads qualifiés</b> générés en 90 jours</span></li>
-                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>3 nouveaux clients</b> signés, directement attribuables aux contenus</span></li>
+                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>+4 200 impressions</b> / mois sur LinkedIn — audience <b>×4 en 60 jours</b></span></li>
+                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>11 leads qualifiés</b> en 90 jours — 0 budget pub</span></li>
+                  <li><span className="ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><span className="txt"><b>3 contrats signés</b> directement attribuables aux contenus</span></li>
                 </ul>
               </div>
             </div>
