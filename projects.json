@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-06-12",
+  "last_updated": "2026-06-13",
   "clients": [
     {
       "id": "CLT-001",
@@ -127,7 +127,14 @@
             "lumi-devis"
           ]
         }
-      ]
+      ],
+      "hub": {
+        "supabase_id": "9604fcca-f1e8-42dc-8a3c-ff90edab3c42",
+        "email": "meunierthibault349@gmail.com",
+        "last_contact": "",
+        "pending": [],
+        "notes": []
+      }
     },
     {
       "id": "CLT-002",
@@ -216,7 +223,14 @@
             "lumi-analytics"
           ]
         }
-      ]
+      ],
+      "hub": {
+        "supabase_id": "91deffaa-fa88-4790-b076-ec4371dcf7e2",
+        "email": "tmeunier2@icloud.com",
+        "last_contact": "",
+        "pending": [],
+        "notes": []
+      }
     }
   ]
 }
