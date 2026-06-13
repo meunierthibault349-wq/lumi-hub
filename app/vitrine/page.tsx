@@ -3,13 +3,6 @@ import VitrineClient from './VitrineClient';
 export default function VitrinePage() {
   return (
     <div className="vitrine-page">
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Inter:wght@300;400;500&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap"
-      />
-
       <VitrineClient />
 
       <a href="#main-content" className="skip-link">Aller au contenu principal</a>
@@ -285,7 +278,7 @@ export default function VitrinePage() {
                   </div>
                   <div className="float-card float-card--b">
                     <span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
-                    <span><small>Équipe complète</small><b>17 agents IA dédiés</b></span>
+                    <span><small>Équipe complète</small><b>28 agents IA dédiés</b></span>
                   </div>
                 </div>
               </div>
@@ -332,7 +325,7 @@ export default function VitrinePage() {
           <div className="wrap">
             <div className="section-head" data-reveal="">
               <span className="eyebrow">Qui sommes-nous</span>
-              <h2>Le fondateur + 17 agents IA.</h2>
+              <h2>Le fondateur + 28 agents IA.</h2>
               <p>Thibault pose la stratégie. Les agents exécutent. Vous récoltez les résultats.</p>
             </div>
             <div className="founder-solo">

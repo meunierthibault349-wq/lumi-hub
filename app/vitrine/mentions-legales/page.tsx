@@ -11,7 +11,7 @@ export default function MentionsLegalesPage() {
     <div className="vitrine-page">
       <header className="header is-stuck" id="header">
         <div className="wrap header__inner">
-          <Link className="brand" href="/vitrine" aria-label="Lumi — accueil">
+          <Link className="brand" href="/" aria-label="Lumi — accueil">
             <div className="brand__icon-wrap">
               <div className="brand__icon-inner">
                 <svg className="brand__mark" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -63,7 +63,7 @@ export default function MentionsLegalesPage() {
             <p>Ce site n&apos;utilise aucun cookie de traçage ou de publicité. Les données de navigation ne sont pas collectées à des fins analytiques.</p>
           </section>
 
-          <Link href="/vitrine" style={{ color: 'var(--teal)', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <Link href="/" style={{ color: 'var(--teal)', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             ← Retour au site
           </Link>
         </div>
