@@ -56,7 +56,7 @@
             "ref": null,
             "one_shot": null,
             "abonnement": 490,
-            "statut": "signé",
+            "statut": "en_attente",
             "url": null
           },
           "dates": {
@@ -206,7 +206,7 @@
             "ref": null,
             "one_shot": null,
             "abonnement": 890,
-            "statut": "signé",
+            "statut": "en_attente",
             "url": null
           },
           "dates": {
