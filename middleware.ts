@@ -28,7 +28,8 @@ export async function middleware(request: NextRequest) {
   const isClientPublic = pathname.startsWith('/client/login') || pathname.startsWith('/client/auth');
   const isAdminPublic = pathname.startsWith('/login') || pathname.startsWith('/auth');
   const isVitrine = pathname.startsWith('/vitrine');
-  const isPublic = isClientPublic || isAdminPublic || isVitrine;
+  const isPublicApi = pathname === '/api/contact';
+  const isPublic = isClientPublic || isAdminPublic || isVitrine || isPublicApi;
 
   if (!user && !isPublic) {
     if (pathname.startsWith('/api/')) {
