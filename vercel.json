@@ -1,3 +1,13 @@
 {
-  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' next build"
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+  "crons": [
+    {
+      "path": "/api/cron/deadlines",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/health",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
