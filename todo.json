@@ -214,11 +214,11 @@
       "title": "Lancer agent web-developer-lumi pour construire le site Lumi (brief validé session 10)",
       "project": "Lumi Cabinet",
       "due": "2026-06-15",
-      "status": "todo",
+      "status": "done",
       "priority": 9,
       "recurring": null,
       "createdAt": "2026-06-08T17:00:00Z",
-      "completedAt": null
+      "completedAt": "2026-06-14T06:23:46.353Z"
     },
     {
       "id": "task-007-lumi-offre-hub",
@@ -366,11 +366,11 @@
       "title": "Logo 100P v2 — Direction 01 + forme voiture + déclinaison orange",
       "project": "100P",
       "due": "2026-06-14",
-      "status": "todo",
+      "status": "done",
       "priority": 9,
       "recurring": null,
       "createdAt": "2026-06-12T10:00:00Z",
-      "completedAt": null
+      "completedAt": "2026-06-14T06:23:46.353Z"
     },
     {
       "id": "task-100p-reseaux-charte",
